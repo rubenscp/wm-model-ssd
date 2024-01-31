@@ -15,7 +15,7 @@
 
 This Python project aims to train and inference the Single Shot Detector (SSD) Model in the image dataset of white mold disease and its stages.
 
-# Installing Python Virtual Environment
+## Installing Python Virtual Environment
 ```
 module load python/3.10.10-gcc-9.4.0
 ```
@@ -32,7 +32,7 @@ source venv-wm-model-ssd/bin/activate
 pip install -r requirements.txt
 ```
 
-# Running Python Application 
+## Running Python Application 
 
 ```
 access specific folder 'wm-model-ssd'
