@@ -1,4 +1,4 @@
-# White Mold Pre-Processing Image Dataset
+# White Mold Single Shot Detector (SSD) Model 
 
 ### Institute of Computing (IC) at University of Campinas (Unicamp)
 
@@ -13,7 +13,7 @@
 
 ### Main purpose
 
-This Python project aims to support the pre-processing of the images used to train and inference the neural networks models evaluated.
+This Python project aims to train and inference the Single Shot Detector (SSD) Model in the image dataset of white mold disease and its stages.
 
 # Installing Python Virtual Environment
 ```
