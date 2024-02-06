@@ -16,12 +16,14 @@ import logging
 from datetime import datetime
 from utils import Utils
 
-def logging_create_log(log_filename='wm-model-ssd'):
+def logging_create_log(log_folder, log_filename):
 
-    # creating log folder 
-    log_folder = 'log'
-    Utils.create_directory('log')
+    # setting full path and log folder 
+    # path_and_log_folder = os.path.join(full_path_project, log_folder)
 
+    # creating log folder     
+    # Utils.create_directory(path_and_log_folder)
+    
     # setting logging file 
     now = datetime.now()
     log_filename_full = log_filename + now.strftime('-%Y-%m-%d-%Hh%Mm%Ss.log')
@@ -31,7 +33,7 @@ def logging_create_log(log_filename='wm-model-ssd'):
                         level=logging.DEBUG, format=log_format)
 
     # returning the log filename 
-    return log_filename_full
+    # return log_filename_full
 
 def logging_info(message):
     logging.info(message)
@@ -52,8 +54,4 @@ def get_datetime():
     now = datetime.now()
     date_time_text = now.strftime('%Y/%m/%d %H:%M:%S')
     return date_time_text
-
-
-
-
-
+    

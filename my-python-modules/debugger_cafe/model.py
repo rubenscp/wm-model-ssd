@@ -39,6 +39,14 @@ def create_model(num_classes=91, size=300, nms=0.45):
     )
     return model
 
+def create_model_pytorchvision(num_classes_aux, size=300, nms=0.45, pretrained=True):
+    # print(f'num_classes_aux: {num_classes_aux}')
+    if size == 300:
+        model = torchvision.models.detection.ssd300_vgg16(num_classes_aux, pretrained=True)
+    else: 
+        model = None
+    return model    
+
 if __name__ == '__main__':
     model = create_model(2, 300)
     print(model)

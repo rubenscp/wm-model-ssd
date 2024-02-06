@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from albumentations.pytorch import ToTensorV2
 # from config import DEVICE, CLASSES
 
+from manage_log import *
+
 plt.style.use('ggplot')
 
 # This class keeps track of the training and validation loss values
@@ -47,8 +49,12 @@ class SaveBestModel:
         model, 
         current_valid_map, 
         epoch, 
-        OUT_DIR,
+        output_results_folder,
+        weights_base_filename
     ):
+
+        # logging.info(f'SaveBestModel - output_results_folder: {output_results_folder}')
+
         if current_valid_map > self.best_valid_map:
             self.best_valid_map = current_valid_map
             print(f"\nBEST VALIDATION mAP: {self.best_valid_map}")
@@ -56,7 +62,7 @@ class SaveBestModel:
             torch.save({
                 'epoch': epoch+1,
                 'model_state_dict': model.state_dict(),
-                }, f"{OUT_DIR}/best_model.pth")
+                }, f"{output_results_folder}/{weights_base_filename}-best_model.pth")
 
 def collate_fn(batch):
     """
@@ -120,7 +126,7 @@ def show_tranformed_image(train_loader):
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
-def save_model(epoch, model, optimizer):
+def save_model(epoch, model, optimizer, output_results_folder, weights_base_filename):
     """
     Function to save the trained model till current epoch, or whenver called
     """
@@ -128,10 +134,10 @@ def save_model(epoch, model, optimizer):
                 'epoch': epoch+1,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
-                }, 'outputs/last_model.pth')
+                }, f'{output_results_folder}/{weights_base_filename}-last_model.pth')
 
 def save_loss_plot(
-    OUT_DIR, 
+    output_results_folder, 
     train_loss_list, 
     x_label='iterations',
     y_label='train loss',
@@ -140,7 +146,7 @@ def save_loss_plot(
     """
     Function to save both train loss graph.
     
-    :param OUT_DIR: Path to save the graphs.
+    :param output_results_folder: Path to save the graphs.
     :param train_loss_list: List containing the training loss values.
     """
     figure_1 = plt.figure(figsize=(10, 7), num=1, clear=True)
@@ -148,13 +154,13 @@ def save_loss_plot(
     train_ax.plot(train_loss_list, color='tab:blue')
     train_ax.set_xlabel(x_label)
     train_ax.set_ylabel(y_label)
-    figure_1.savefig(f"{OUT_DIR}/{save_name}.png")
+    figure_1.savefig(f"{output_results_folder}/{save_name}.png")
     print('SAVING PLOTS COMPLETE...')
 
-def save_mAP(OUT_DIR, map_05, map):
+def save_mAP(output_results_folder, map_05, map):
     """
     Saves the mAP@0.5 and mAP@0.5:0.95 per epoch.
-    :param OUT_DIR: Path to save the graphs.
+    :param output_results_folder: Path to save the graphs.
     :param map_05: List containing mAP values at 0.5 IoU.
     :param map: List containing mAP values at 0.5:0.95 IoU.
     """
@@ -171,4 +177,4 @@ def save_mAP(OUT_DIR, map_05, map):
     ax.set_xlabel('Epochs')
     ax.set_ylabel('mAP')
     ax.legend()
-    figure.savefig(f"{OUT_DIR}/map.png")
+    figure.savefig(f"{output_results_folder}/map.png")

@@ -9,7 +9,7 @@ from xml.etree import ElementTree as et
 #     CLASSES, RESIZE_TO, TRAIN_DIR, BATCH_SIZE
 # )
 from torch.utils.data import Dataset, DataLoader
-from custom_utils import collate_fn, get_train_transform, get_valid_transform
+from debugger_cafe.custom_utils import collate_fn, get_train_transform, get_valid_transform
 
 # The dataset class.
 class CustomDataset(Dataset):
@@ -117,30 +117,37 @@ class CustomDataset(Dataset):
         return len(self.all_images)
 
 # Prepare the final datasets and data loaders.
-def create_train_dataset(DIR):
+def create_train_dataset(dir, resize_to, classes):
+    # print('--------------------------------------')
+    # print(dir)
+    # print(resize_to)
+    # print(classes)
+    # print('--------------------------------------')
     train_dataset = CustomDataset(
-        DIR, RESIZE_TO, RESIZE_TO, CLASSES, get_train_transform()
+        dir, resize_to, resize_to, classes, get_train_transform()
     )
     return train_dataset
-def create_valid_dataset(DIR):
+
+def create_valid_dataset(dir, resize_to, classes):
     valid_dataset = CustomDataset(
-        DIR, RESIZE_TO, RESIZE_TO, CLASSES, get_valid_transform()
+        dir, resize_to, resize_to, classes, get_valid_transform()
     )
     return valid_dataset
-def create_train_loader(train_dataset, num_workers=0):
+
+def create_train_loader(train_dataset, batch_size, num_workers=0):
     train_loader = DataLoader(
         train_dataset,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
         collate_fn=collate_fn,
         drop_last=False
     )
     return train_loader
-def create_valid_loader(valid_dataset, num_workers=0):
+def create_valid_loader(valid_dataset, batch_size, num_workers=0):
     valid_loader = DataLoader(
         valid_dataset,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
         collate_fn=collate_fn,
@@ -152,38 +159,38 @@ def create_valid_loader(valid_dataset, num_workers=0):
 # execute `datasets.py`` using Python command from 
 # Terminal to visualize sample images
 # USAGE: python datasets.py
-if __name__ == '__main__':
-    # sanity check of the Dataset pipeline with sample visualization
-    dataset = CustomDataset(
-        TRAIN_DIR, RESIZE_TO, RESIZE_TO, CLASSES
-    )
-    print(f"Number of training images: {len(dataset)}")
+# if __name__ == '__main__':
+#     # sanity check of the Dataset pipeline with sample visualization
+#     dataset = CustomDataset(
+#         TRAIN_DIR, RESIZE_TO, RESIZE_TO, CLASSES
+#     )
+#     print(f"Number of training images: {len(dataset)}")
     
-    # function to visualize a single sample
-    def visualize_sample(image, target):
-        for box_num in range(len(target['boxes'])):
-            box = target['boxes'][box_num]
-            label = CLASSES[target['labels'][box_num]]
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            cv2.rectangle(
-                image, 
-                (int(box[0]), int(box[1])), (int(box[2]), int(box[3])),
-                (0, 0, 255), 
-                2
-            )
-            cv2.putText(
-                image, 
-                label, 
-                (int(box[0]), int(box[1]-5)), 
-                cv2.FONT_HERSHEY_SIMPLEX, 
-                0.7, 
-                (0, 0, 255), 
-                2
-            )
-        cv2.imshow('Image', image)
-        cv2.waitKey(0)
+#     # function to visualize a single sample
+#     def visualize_sample(image, target):
+#         for box_num in range(len(target['boxes'])):
+#             box = target['boxes'][box_num]
+#             label = CLASSES[target['labels'][box_num]]
+#             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+#             cv2.rectangle(
+#                 image, 
+#                 (int(box[0]), int(box[1])), (int(box[2]), int(box[3])),
+#                 (0, 0, 255), 
+#                 2
+#             )
+#             cv2.putText(
+#                 image, 
+#                 label, 
+#                 (int(box[0]), int(box[1]-5)), 
+#                 cv2.FONT_HERSHEY_SIMPLEX, 
+#                 0.7, 
+#                 (0, 0, 255), 
+#                 2
+#             )
+#         cv2.imshow('Image', image)
+#         cv2.waitKey(0)
         
-    NUM_SAMPLES_TO_VISUALIZE = 5
-    for i in range(NUM_SAMPLES_TO_VISUALIZE):
-        image, target = dataset[i]
-        visualize_sample(image, target)
+#     NUM_SAMPLES_TO_VISUALIZE = 5
+#     for i in range(NUM_SAMPLES_TO_VISUALIZE):
+#         image, target = dataset[i]
+#         visualize_sample(image, target)

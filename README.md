@@ -38,5 +38,29 @@ pip install -r requirements.txt
 access specific folder 'wm-model-ssd'
 ```
 ```
-execute command: python my-python-modules/manage_ssd_train.py
+python my-python-modules/manage_ssd_train.py
 ```
+
+## Submitting Python Application at LoveLace environment 
+
+Version of CUDA module to load: 
+- module load cuda/11.5.0-intel-2022.0.1
+
+```
+qsub wm-model-ssd.script
+```
+```
+qstat -u rubenscp 
+```
+```
+qstat -q umagpu 
+```
+
+The results of job execution can be visualizedat some files as:
+- errors
+- output 
+
+
+CUDA 
+old - module load cudnn/8.2.0.53-11.3-gcc-9.3.0
+new - module load cuda/12.0.0-gcc-8.5.0 

@@ -55,11 +55,11 @@ class Utils:
 
     # Copy one file
     @staticmethod
-    def copy_file(filename, input_path, output_path):
-        # source = os.path.join(input_path, filename)
-        # destination = os.path.join(output_path, filename)
-        # shutil.copy(source, destination)
-        copy_file(input_filename=filename, input_path=input_path, output_filename=filename, output_path=output_path)
+    def copy_file_same_name(filename, input_path, output_path):
+        source = os.path.join(input_path, filename)
+        destination = os.path.join(output_path, filename)
+        shutil.copy(source, destination)
+        # copy_file(input_filename=filename, input_path=input_path, output_filename=filename, output_path=output_path)
 
     @staticmethod
     def copy_file(input_filename, input_path, output_filename, output_path):
@@ -144,6 +144,10 @@ class Utils:
 
         # returning  parameters dictionary
         return parameters
+
+    # Convert json boolean to python boolean 
+    def to_boolean_value(json_boolean_value):
+        boolean_value = bool(json_boolean_value == 'true')
 
     # Create a pretty json for printing
     @staticmethod
