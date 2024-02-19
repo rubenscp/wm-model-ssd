@@ -14,6 +14,14 @@ import argparse
 
 # Importing python modules
 from manage_log import *
+from utils import * 
+
+# Importing entity classes
+from entity.ImageAnnotation import ImageAnnotation
+
+# ###########################################
+# Constants
+# ###########################################
 LINE_FEED = '\n'
 
 # setting seed 
@@ -26,6 +34,14 @@ def inference_neural_network_model(parameters, device, model):
     '''
     Inference test images dataset in the trained mode
     '''    
+
+    logging_info(f'')
+    logging_info(f'>> Processing the inference on the test images dataset')
+    logging_info(f'')
+
+    # creating working lists
+    y_pred = []
+    y_true = []
 
     # loading weights
     path_and_weights_filename = os.path.join(
@@ -55,15 +71,25 @@ def inference_neural_network_model(parameters, device, model):
 
     # DIR_TEST = args['input']
     test_images = glob.glob(f"{test_image_dataset_folder}/*.jpg")
-    print(f"Test instances: {len(test_images)}")
     # print(f"Tests list: {test_images}")
 
     frame_count = 0 # To count total frames.
     total_fps = 0 # To get the final frames per second.
 
     for i in range(len(test_images)):
-        # print(f'processing image {test_images[i]}')
-        logging.info(f'Processing image {test_images[i]}')
+        # logging image name 
+        logging_info(f'Processing image #{i+1} - {test_images[i]}')
+        
+        # extracting parts of path and image filename 
+        path, filename_with_extension, filename, extension = Utils.get_filename(test_images[i])
+
+        # setting the annotation filename 
+        path_and_filename_xml_annotation = os.path.join(path, filename + '.xml')
+
+        # getting xml annotation of the image 
+        image_annotation = ImageAnnotation()
+        image_annotation.get_annotation_in_voc_pascal_format(path_and_filename_xml_annotation)
+        # print(image_annotation.toString())
 
         # Get the image file name for saving output later on.
         image_name = test_images[i].split(os.path.sep)[-1].split('.')[0]
@@ -71,59 +97,91 @@ def inference_neural_network_model(parameters, device, model):
         orig_image = image.copy()
         # if args['imgsz'] is not None:
         #     image = cv2.resize(image, (args['imgsz'], args['imgsz']))
-        print(image.shape)
+        # logging_info(f'image.shape: {image.shape}')
+
         # BGR to RGB.
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
+        
         # Make the pixel range between 0 and 1.
         image /= 255.0
+        
         # Bring color channels to front (H, W, C) => (C, H, W).
         image_input = np.transpose(image, (2, 0, 1)).astype(np.float32)
+        
         # Convert to tensor.
         image_input = torch.tensor(image_input, dtype=torch.float).cuda()
+        
         # Add batch dimension.
         image_input = torch.unsqueeze(image_input, 0)
         start_time = time.time()
+        
         # Predictions
         with torch.no_grad():
             outputs = model(image_input.to(device))
         end_time = time.time()
 
+        # NOTE: The bounding boxes selected in the "outputs" are ordered dicreasing by its scores
+
         # Get the current fps.
         fps = 1 / (end_time - start_time)
+        
         # Total FPS till current frame.
         total_fps += fps
         frame_count += 1
 
         # Load all detection to CPU for further operations.
         outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
-        print(f"{test_images[i]} - output_bbox: {len(outputs[0]['boxes'])}")
+
+        # logging_info(f"outputs: {outputs}")
+        # logging_info(f"len(outputs[0]['boxes']): {len(outputs[0]['boxes'])}")
+        # logging_info(f"outputs[0]['boxes']: {outputs[0]['boxes']}")
 
         # Carry further only if there are detected boxes.
         if len(outputs[0]['boxes']) != 0:
             boxes = outputs[0]['boxes'].data.numpy()
             scores = outputs[0]['scores'].data.numpy()
+
             # Filter out boxes according to `detection_threshold`.
             # boxes = boxes[scores >= args['threshold']].astype(np.int32)
             threshold = parameters['neural_network_model']['threshold']
             boxes = boxes[scores >= threshold].astype(np.int32)
             draw_boxes = boxes.copy()
 
+            boxes_thresholded = []
+            scores_thresholded = []
+            for i in range(len(boxes)):
+                if scores[i] >= threshold:
+                    # logging_info(f'indice box: {i}')
+                    # logging_info(f'boxes[{i}]: {boxes[i]}')
+                    # logging_info(f'scores[{i}]: {scores[i]}')
+                    boxes_thresholded.append(boxes[i].astype(np.int32))
+                    scores_thresholded.append(scores[i])
+
+            # logging_info(f'draw_boxes: {draw_boxes}')
+            draw_boxes2 = boxes_thresholded.copy()
+            # logging_info(f'draw_boxes2: {draw_boxes2}')
+            # logging_info(f'-----------------------------')                        
+            # logging_info(f'boxes_thresholded: {boxes_thresholded}')
+            # logging_info(f'scores_thresholded: {scores_thresholded}')
+
             # Get all the predicited class names.
             pred_classes = [classes[i] for i in outputs[0]['labels'].cpu().numpy()]
-            # for i in outputs[0]['labels'].cpu().numpy():
-            #   if i > NUM_CLASSES:
-            #     continue
-            #   pred_classes = classes[i]
 
-            print(f'{test_images[i]} - bbox selected: {len(draw_boxes)}')
+            # logging_info(f'bboxes selected: {len(draw_boxes)}')
 
             # Draw the bounding boxes and write the class name on top of it.
             for j, box in enumerate(draw_boxes):
-                class_name = pred_classes[j]
+                # logging_info(f'Inside for j,box - j:{j}  box:{box}')
+                # logging_info(f'pred_classes:{pred_classes}')
 
-                print(f'Inference 1 - class_name:{class_name}')
-                print(f'Inference 2 - classes:{classes}')
-                print(f'Inference 3 - classes.index(class_name):{classes.index(class_name)}')
+                class_name = pred_classes[j]
+                bbox_score = scores_thresholded[j]
+                bbox_label_text = class_name + ' ('+ '%.2f' % bbox_score + ')'
+
+                # logging_info(f'bbox_score: {bbox_score}')
+                # logging_info(f'Inference 1 - class_name:{class_name}')
+                # logging_info(f'Inference 2 - classes:{classes}')
+                # logging_info(f'Inference 3 - classes.index(class_name):{classes.index(class_name)}')
 
                 color = colors[classes.index(class_name)]
                 # Recale boxes.
@@ -137,28 +195,30 @@ def inference_neural_network_model(parameters, device, model):
                             color[::-1],
                             3)
                 cv2.putText(orig_image,
-                            class_name,
+                            bbox_label_text,
                             (xmin, ymin-5),
                             cv2.FONT_HERSHEY_SIMPLEX,
-                            0.8,
+                            0.6,
                             color[::-1],
                             2,
                             lineType=cv2.LINE_AA)
 
             # cv2.imshow('Prediction', orig_image)
             cv2.waitKey(1)
-            inferenced_image_folder = os.path.join(parameters['inference_results']['inferenced_image_folder'])
-            cv2.imwrite(f"{inferenced_image_folder}/{image_name}.jpg", orig_image)
+            inferenced_image_folder = os.path.join(
+                parameters['inference_results']['inferenced_image_folder']
+            )
+            cv2.imwrite(f"{inferenced_image_folder}/{image_name}_predicted.jpg", orig_image)
 
-        print(f"Image {i+1} done...")
-        print('-'*50)
+        # logging_info(f"Image {i+1} done...")
+        # logging_info(f'-'*50)
 
-    print('TEST PREDICTIONS COMPLETE')
+    # logging_info('TEST PREDICTIONS COMPLETE')
     # cv2.destroyAllWindows()
 
     # Calculate and print the average FPS.
     avg_fps = total_fps / frame_count
-    print(f"Average FPS: {avg_fps:.3f}")
+    # logging_info(f"Average FPS: {avg_fps:.3f}")
 
 
 # # Construct the argument parser.
@@ -275,3 +335,4 @@ def inference_neural_network_model(parameters, device, model):
 # # Calculate and print the average FPS.
 # avg_fps = total_fps / frame_count
 # print(f"Average FPS: {avg_fps:.3f}")
+

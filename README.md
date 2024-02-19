@@ -55,6 +55,9 @@ qstat -u rubenscp
 ```
 qstat -q umagpu 
 ```
+```
+qstat -f 'job_id' 
+```
 
 The results of job execution can be visualizedat some files as:
 - errors

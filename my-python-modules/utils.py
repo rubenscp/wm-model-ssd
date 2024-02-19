@@ -13,7 +13,10 @@ Version: 1.0
 import os
 import shutil
 import json 
-# import cv2
+
+import xml.etree.ElementTree as ET
+from lxml import etree
+from dict2xml import dict2xml
 
 # ###########################################
 # Constants
@@ -158,4 +161,27 @@ class Utils:
         
         # returning json formatted
         return json_formatted_str
-                
+
+
+    # Get filename from full string 
+    @staticmethod
+    def get_filename(path_and_filename):
+        # getting filename with extension
+        index_1 = path_and_filename.rfind('/')
+        path = path_and_filename[:index_1]
+        filename_with_extension = path_and_filename[index_1 + 1:]
+
+        # getting just the filename and the extension separated
+        index_2 = path_and_filename.rfind('.')
+        filename = path_and_filename[index_1 + 1:index_2]
+        extension = path_and_filename[index_2 + 1:]
+
+        # print(f'path_and_filename:       {path_and_filename}')
+        # print(f'path:                    {path}')
+        # print(f'filename_with_extension: {filename_with_extension}')
+        # print(f'filename:                {filename}')
+        # print(f'extension:               {extension}')
+
+        # returning filename with extension, just filename and the extension 
+        return path, filename_with_extension, filename, extension
+        

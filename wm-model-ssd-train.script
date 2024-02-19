@@ -1,8 +1,8 @@
 #PBS -N ssd_train
 #PBS -q umagpu
 #PBS -e ssd_train_errors 
-#PBS -m abe
 #PBS -o ssd_train_output
+#PBS -m abe
 
 source ~/research/white-mold-applications/wm-model-ssd/venv-wm-model-ssd/bin/activate
 module load cuda/11.5.0-intel-2022.0.1

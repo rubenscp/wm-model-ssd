@@ -17,13 +17,7 @@ from datetime import datetime
 from utils import Utils
 
 def logging_create_log(log_folder, log_filename):
-
-    # setting full path and log folder 
-    # path_and_log_folder = os.path.join(full_path_project, log_folder)
-
-    # creating log folder     
-    # Utils.create_directory(path_and_log_folder)
-    
+       
     # setting logging file 
     now = datetime.now()
     log_filename_full = log_filename + now.strftime('-%Y-%m-%d-%Hh%Mm%Ss.log')
@@ -31,9 +25,6 @@ def logging_create_log(log_folder, log_filename):
     log_format = '%(levelname)s %(asctime)s: %(message)s'
     logging.basicConfig(filename=filename, encoding='utf-8', 
                         level=logging.DEBUG, format=log_format)
-
-    # returning the log filename 
-    # return log_filename_full
 
 def logging_info(message):
     logging.info(message)

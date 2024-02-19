@@ -1,8 +1,8 @@
 #PBS -N ssd_inference
-#PBS -q testegpu
+#PBS -q miggpu
 #PBS -e ssd_inference_errors 
-#PBS -m abe
 #PBS -o ssd_inference_output
+#PBS -m abe
 
 source ~/research/white-mold-applications/wm-model-ssd/venv-wm-model-ssd/bin/activate
 module load cuda/11.5.0-intel-2022.0.1

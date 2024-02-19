@@ -3,11 +3,11 @@
         "input_dataset": {
             "input_image_size": 300,
             "annotation_format": "ssd_pascal_voc",
-            "input_dataset_path": "white-mold-dataset/03-splitting_by_images-8-ds/03.2-output-dataset"
+            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0111-03ds/splitting_by_images/2-output-dataset"
         },
         "inference": {
-            "weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-applications/wm-model-ssd/inference-weights",
-            "weights_filename": "ssd300_vgg16-running-0059-300x300-best_model.pth"
+            "weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights",
+            "weights_filename": "ssd300_vgg16-running-0003-300x300-best_model.pth"
         }    
     },
     "neural_network_model": {
@@ -46,8 +46,8 @@
     },
     "training_results": {
         "main_folder": "white-mold-results",        
-        "action_folder": "training",
         "model_folder": "defined during training/inference",
+        "action_folder": "training",
         "running_folder": "defined during training/inference",
         "processing_parameters_folder": "processing-parameters",
         "weights_folder": "weights",
@@ -58,8 +58,8 @@
     },
     "inference_results": {
         "main_folder": "white-mold-results",        
-        "action_folder": "inference",
         "model_folder": "defined during training/inference",
+        "action_folder": "inference",
         "running_folder": "defined during training/inference",
         "processing_parameters_folder": "processing-parameters",
         "weights_folder": "weights",

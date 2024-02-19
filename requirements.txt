@@ -9,3 +9,5 @@ torchvision
 albumentations
 pyarrow
 tqdm
+lxml
+dict2xml
