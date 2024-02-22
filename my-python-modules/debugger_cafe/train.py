@@ -36,6 +36,7 @@ import os
 
 # Importing python modules
 from manage_log import *
+
 LINE_FEED = '\n'
 
 plt.style.use('ggplot')
@@ -195,7 +196,7 @@ def train_neural_network_model(parameters, device, model, train_dataloader, vali
     for epoch in range(parameters['neural_network_model']['number_epochs']):
 
         logging.info(f'')
-        logging.info(f"Epoch {epoch+1} of {parameters['neural_network_model']['number_epochs']}" + LINE_FEED)
+        logging.info(f"Epoch {epoch+1} of {parameters['neural_network_model']['number_epochs']} - starting" + LINE_FEED)
 
         # Reset the training loss histories for the current epoch.
         train_loss_history.reset()
@@ -254,19 +255,19 @@ if __name__ == '__main__':
     valid_dataset = create_valid_dataset(VALID_DIR)
     train_loader = create_train_loader(train_dataset, NUM_WORKERS)
     valid_loader = create_valid_loader(valid_dataset, NUM_WORKERS)
-    print(f"Number of training samples: {len(train_dataset)}")
-    print(f"Number of validation samples: {len(valid_dataset)}\n")
+    logging_info(f"Number of training samples: {len(train_dataset)}")
+    logging_info(f"Number of validation samples: {len(valid_dataset)}\n")
 
     # Initialize the model and move to the computation device.
     model = create_model(num_classes=NUM_CLASSES, size=RESIZE_TO)
     model = model.to(DEVICE)
-    print(model)
+    logging_info(model)
     # Total parameters and trainable parameters.
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"{total_params:,} total parameters.")
+    logging_info(f"{total_params:,} total parameters.")
     total_trainable_params = sum(
         p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"{total_trainable_params:,} training parameters.")
+    logging_info(f"{total_trainable_params:,} training parameters.")
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(
         params, lr=0.0005, momentum=0.9, nesterov=True
@@ -295,7 +296,7 @@ if __name__ == '__main__':
 
     # Training loop.
     for epoch in range(NUM_EPOCHS):
-        print(f"\nEPOCH {epoch+1} of {NUM_EPOCHS}")
+        logging_info(f"\nEPOCH {epoch+1} of {NUM_EPOCHS}")
 
         # Reset the training loss histories for the current epoch.
         train_loss_hist.reset()
@@ -304,11 +305,11 @@ if __name__ == '__main__':
         start = time.time()
         train_loss = train(train_loader, model)
         metric_summary = validate(valid_loader, model)
-        print(f"Epoch #{epoch+1} train loss: {train_loss_hist.value:.3f}")   
-        print(f"Epoch #{epoch+1} mAP@0.50:0.95: {metric_summary['map']}")
-        print(f"Epoch #{epoch+1} mAP@0.50: {metric_summary['map_50']}")   
+        logging_info(f"Epoch #{epoch+1} train loss: {train_loss_hist.value:.3f}")   
+        logging_info(f"Epoch #{epoch+1} mAP@0.50:0.95: {metric_summary['map']}")
+        logging_info(f"Epoch #{epoch+1} mAP@0.50: {metric_summary['map_50']}")   
         end = time.time()
-        print(f"Took {((end - start) / 60):.3f} minutes for epoch {epoch}")
+        logging_info(f"Took {((end - start) / 60):.3f} minutes for epoch {epoch}")
 
         train_loss_list.append(train_loss)
         map_50_list.append(metric_summary['map_50'])

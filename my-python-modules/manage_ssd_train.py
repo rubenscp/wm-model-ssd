@@ -58,6 +58,9 @@ from debugger_cafe.datasets import *
 from debugger_cafe.model import * 
 from debugger_cafe.train import * 
 
+# Import python code from White Mold Project 
+from tasks import Tasks
+
 # ###########################################
 # Constants
 # ###########################################
@@ -79,29 +82,42 @@ def main():
     All values of the parameters used here are defined in the external file "wm_model_ssd_parameters.json".
 
     """
+    
+    # creating Tasks object 
+    processing_tasks = Tasks()
 
     # setting dictionary initial parameters for processing
     full_path_project = '/home/lovelace/proj/proj939/rubenscp/research/white-mold-applications/wm-model-ssd'
 
     # getting application parameters 
+    processing_tasks.start_task('Getting application parameters')
     parameters_filename = 'wm_model_ssd_parameters.json'
     parameters = get_parameters(full_path_project, parameters_filename)
+    processing_tasks.finish_task('Getting application parameters')
 
     # setting new values of parameters according of initial parameters
+    processing_tasks.start_task('Setting input image folders')
     set_input_image_folders(parameters)
+    processing_tasks.finish_task('Setting input image folders')
 
     # getting last running id
+    processing_tasks.start_task('Getting running id')
     running_id = get_running_id(parameters)
+    processing_tasks.finish_task('Getting running id')
 
     # setting output folder results
+    processing_tasks.start_task('Setting result folders')
     set_result_folders(parameters)
+    processing_tasks.finish_task('Setting result folders')
     
     # creating log file 
+    processing_tasks.start_task('Creating log file')
     logging_create_log(
         parameters['training_results']['log_folder'], 
         parameters['training_results']['log_filename']
     )
-    
+    processing_tasks.finish_task('Creating log file')
+
     logging_info('White Mold Research')
     logging_info('Training the model SSD (Single Shot Detector)' + LINE_FEED)
 
@@ -114,19 +130,29 @@ def main():
     logging_info(f'>> Set result folders')
 
     # getting device CUDA
+    processing_tasks.start_task('Getting device CUDA')
     device = get_device(parameters)
+    processing_tasks.finish_task('Getting device CUDA')
     
     # creating new instance of parameters file related to current running
+    processing_tasks.start_task('Saving processing parameters')
     save_processing_parameters(parameters_filename, parameters)
+    processing_tasks.finish_task('Saving processing parameters')
 
     # loading dataloaders of image dataset for processing
+    processing_tasks.start_task('Loading dataloaders of image dataset')
     train_dataloader, valid_dataloader, test_dataloader = get_dataloaders(parameters)
+    processing_tasks.finish_task('Loading dataloaders of image dataset')
     
     # creating neural network model 
+    processing_tasks.start_task('Creating neural network model')
     model = get_neural_network_model(parameters, device)
+    processing_tasks.finish_task('Creating neural network model')
 
     # training neural netowrk model
+    processing_tasks.start_task('Training neural netowrk model')
     train_neural_network_model(parameters, device, model, train_dataloader, valid_dataloader)
+    processing_tasks.finish_task('Training neural netowrk model')
 
     # printing metrics results
     
@@ -134,6 +160,10 @@ def main():
     # finishing model training 
     logging_info('')
     logging_info('Finished the training of the model SSD (Single Shot Detector)' + LINE_FEED)
+
+    # printing tasks summary 
+    processing_tasks.finish_processing()
+    logging_info(processing_tasks.to_string())
 
 
 # ###########################################
@@ -166,6 +196,9 @@ def set_input_image_folders(parameters):
         input_image_size + 'x' + input_image_size,
     )
 
+    # print(f'image_dataset_folder: {image_dataset_folder}')
+    # exit()
+
     # setting image dataset folder in processing parameters 
     parameters['processing']['image_dataset_folder'] = image_dataset_folder
     parameters['processing']['image_dataset_folder_train'] = \
@@ -174,6 +207,7 @@ def set_input_image_folders(parameters):
         os.path.join(image_dataset_folder, 'valid')
     parameters['processing']['image_dataset_folder_test'] = \
         os.path.join(image_dataset_folder, 'test')
+            
 
 def get_running_id(parameters):
     '''
@@ -339,6 +373,7 @@ def get_dataloaders(parameters):
 
     # torch.unique(train_folder.targets, return_counts=True)
     # print(len(dataloader.dataset))
+    
 
     logging.info(f'Getting datasets')
     logging.info(f'   Number of training images  : {len(train_dataset)}')
@@ -389,102 +424,6 @@ def get_neural_network_model(parameters, device):
 
     # returning neural network model
     return model
-
-# def train_neural_network_model(parameters, device, model, train_dataloader, valid_dataloader):
-#     '''
-#     Train model with the image dataset 
-#     '''    
-
-#     logging.info('3. Train model')
-
-#     # setting seeds
-#     plt.style.use('ggplot')        
-#     seed = 42
-#     torch.manual_seed(seed)
-#     torch.cuda.manual_seed(seed)
-#     torch.cuda.manual_seed_all(seed)
-
-#     # Total parameters and trainable parameters.
-#     total_params = sum(p.numel() for p in model.parameters())
-#     logging.info(f"{total_params:,} total parameters")
-
-#     total_trainable_params = sum(
-#         p.numel() for p in model.parameters() if p.requires_grad)
-#     logging.info(f'{total_trainable_params:,} training parameters.')
-#     params = [p for p in model.parameters() if p.requires_grad]
-#     optimizer = torch.optim.SGD(
-#         params, 
-#         lr=parameters['neural_network_model']['learning_rate'],
-#         momentum=parameters['neural_network_model']['momentum'],
-#         nesterov=True
-#     )
-#     scheduler = MultiStepLR(
-#         optimizer=optimizer, 
-#         milestones=[45], 
-#         gamma=parameters['neural_network_model']['momentum'],
-#         verbose=True
-#     )
-
-#     # To monitor training loss
-#     train_loss_history = Averager()
-
-#     # To store training loss and mAP values.
-#     train_loss_list = []
-#     map_50_list = []
-#     map_list = []
-
-#     # Mame to save the trained model with.
-#     # MODEL_NAME = 'model'
-
-#     # Whether to show transformed images from data loader or not.
-#     # if VISUALIZE_TRANSFORMED_IMAGES:
-#     #     # from custom_utils import show_tranformed_image
-#     #     show_tranformed_image(train_loader)
-
-#     # To save best model.
-#     save_best_model = SaveBestModel()
-
-#     # Training loop
-#     for epoch in range(parameters['neural_network_model']['number_epochs']):
-#         logging.info(f"EPOCH {epoch+1} of {parameters['neural_network_model']['number_epochs']}" + LINE_FEED)
-
-#         # Reset the training loss histories for the current epoch.
-#         train_loss_history.reset()
-
-#         # Start timer and carry out training and validation.
-#         start = time.time()
-#         train_loss = train(train_dataloader, model)
-#         metric_summary, metric_dice_score_summary = validate(valid_dataloader, model)
-#         logging.info(f"Epoch #{epoch+1} train loss: {train_loss_history.value:.3f}")
-#         logging.info(f"Epoch #{epoch+1} mAP@0.50:0.95: {metric_summary['map']}")
-#         logging.info(f"Epoch #{epoch+1} mAP@0.50: {metric_summary['map_50']}")
-#         # logging.info(f"Epoch #{epoch+1} Dice score: {metric_dice_score_summary}")
-#         # logging.info(f"Epoch #{epoch+1} f1 score: {metric_f1_score}")
-#         end = time.time()
-#         logging.info(f"Took {((end - start) / 60):.3f} minutes for epoch {epoch}")
-
-#         train_loss_list.append(train_loss)
-#         map_50_list.append(metric_summary['map_50'])
-#         map_list.append(metric_summary['map'])
-
-#         # save the best model till now.
-#         save_best_model(
-#             model,
-#             float(metric_summary['map']),
-#             epoch,
-#             local_results_ssd_path
-#         )
-#         # Save the current epoch model.
-#         save_model(epoch, model, optimizer)
-
-#         # Save loss plot.
-#         save_loss_plot(parameters['training_results']['output_folder'], train_loss_list)
-
-#         # Save mAP plot.
-#         save_mAP(parameters['training_results']['output_folder'], map_50_list, map_list)
-#         scheduler.step()
-
-#         break
 
 
 # ###########################################

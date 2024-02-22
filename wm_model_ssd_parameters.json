@@ -3,11 +3,11 @@
         "input_dataset": {
             "input_image_size": 300,
             "annotation_format": "ssd_pascal_voc",
-            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0111-03ds/splitting_by_images/2-output-dataset"
+            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0113-15ds/splitting_by_images/2-output-dataset"
         },
         "inference": {
             "weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights",
-            "weights_filename": "ssd300_vgg16-running-0003-300x300-best_model.pth"
+            "weights_filename": "ssd300_vgg16-running-0001-300x300-best_model.pth"
         }    
     },
     "neural_network_model": {

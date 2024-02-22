@@ -11,6 +11,9 @@ from xml.etree import ElementTree as et
 from torch.utils.data import Dataset, DataLoader
 from debugger_cafe.custom_utils import collate_fn, get_train_transform, get_valid_transform
 
+# Importing python modules
+from manage_log import *
+
 # The dataset class.
 class CustomDataset(Dataset):
     def __init__(self, dir_path, width, height, classes, transforms=None):

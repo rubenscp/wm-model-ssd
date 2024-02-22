@@ -7,6 +7,9 @@ from torchvision.models.detection.ssd import (
     SSDHead
 )
 
+# Importing python modules
+from manage_log import *
+
 def create_model(num_classes=91, size=300, nms=0.45):
     model_backbone = torchvision.models.resnet34(
         weights=torchvision.models.ResNet34_Weights.DEFAULT
@@ -47,12 +50,12 @@ def create_model_pytorchvision(num_classes_aux, size=300, nms=0.45, pretrained=T
         model = None
     return model    
 
-if __name__ == '__main__':
-    model = create_model(2, 300)
-    print(model)
-    # Total parameters and trainable parameters.
-    total_params = sum(p.numel() for p in model.parameters())
-    print(f"{total_params:,} total parameters.")
-    total_trainable_params = sum(
-        p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"{total_trainable_params:,} training parameters.")
+# if __name__ == '__main__':
+#     model = create_model(2, 300)
+#     print(model)
+#     # Total parameters and trainable parameters.
+#     total_params = sum(p.numel() for p in model.parameters())
+#     print(f"{total_params:,} total parameters.")
+#     total_trainable_params = sum(
+#         p.numel() for p in model.parameters() if p.requires_grad)
+#     print(f"{total_trainable_params:,} training parameters.")
