@@ -48,41 +48,41 @@ torch.cuda.manual_seed_all(seed)
 
 # Function for running training iterations.
 def train(train_data_loader, model, device, optimizer, train_loss_history):
-    # logging.info(f'Training model')
+    # logging_info(f'Training model')
     model.train()
     
      # initialize tqdm progress bar
     prog_bar = tqdm(train_data_loader, total=len(train_data_loader))   
     # for i, data in enumerate(prog_bar):
-    # logging.info(f'train_data_loader size: {len(train_data_loader)}')
+    # logging_info(f'train_data_loader size: {len(train_data_loader)}')
 
     for i, data in enumerate(train_data_loader):
-        # logging.info(f'Training model loop - i:{i} ')
-        # logging.info(f'Data: {data}')
-        # logging.info(f'')
-        # logging.info(f'Training model {i} - loop 1')
+        # logging_info(f'Training model loop - i:{i} ')
+        # logging_info(f'Data: {data}')
+        # logging_info(f'')
+        # logging_info(f'Training model {i} - loop 1')
         optimizer.zero_grad()
-        # logging.info(f'Training model {i} - loop 2')
+        # logging_info(f'Training model {i} - loop 2')
         images, targets = data
         
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        # logging.info(f'Training model {i} - loop 3')
+        # logging_info(f'Training model {i} - loop 3')
         loss_dict = model(images, targets)
-        # logging.info(f'Training model {i} - loop 4')
+        # logging_info(f'Training model {i} - loop 4')
 
         losses = sum(loss for loss in loss_dict.values())
-        # logging.info(f'Training model {i} - loop 5')
+        # logging_info(f'Training model {i} - loop 5')
         loss_value = losses.item()
-        # logging.info(f'Training model {i} - loop 6')
+        # logging_info(f'Training model {i} - loop 6')
 
         train_loss_history.send(loss_value)
-        # logging.info(f'Training model {i} - loop 7')
+        # logging_info(f'Training model {i} - loop 7')
 
         losses.backward()
-        # logging.info(f'Training model {i} - loop 8')
+        # logging_info(f'Training model {i} - loop 8')
         optimizer.step()
-        # logging.info(f'Training model {i} - loop 9')
+        # logging_info(f'Training model {i} - loop 9')
     
         # update the loss value beside the progress bar for each iteration
         prog_bar.set_description(desc=f"Loss: {loss_value:.4f}")
@@ -98,10 +98,10 @@ def validate(valid_data_loader, model, device):
     target = []
     preds = []
     # for i, data in enumerate(prog_bar):
-    # logging.info(f'valid_data_loader size: {len(valid_data_loader)}')
+    # logging_info(f'valid_data_loader size: {len(valid_data_loader)}')
     for i, data in enumerate(valid_data_loader):
 
-        # logging.info(f'validate - 3 - i:{i}')
+        # logging_info(f'validate - 3 - i:{i}')
 
         images, targets = data
         
@@ -111,7 +111,7 @@ def validate(valid_data_loader, model, device):
         with torch.no_grad():
             outputs = model(images, targets)
 
-        # logging.info(f'validate - 4 - antes calculo mAP - len(images): {len(images)}')
+        # logging_info(f'validate - 4 - antes calculo mAP - len(images): {len(images)}')
 
         # For mAP calculation using Torchmetrics.
         #####################################
@@ -127,7 +127,7 @@ def validate(valid_data_loader, model, device):
             target.append(true_dict)
         #####################################
 
-    # logging.info(f'validate - 5 - antes MeanAveragePrecision')
+    # logging_info(f'validate - 5 - antes MeanAveragePrecision')
 
     metric = MeanAveragePrecision()
     metric.update(preds, target)
@@ -142,7 +142,7 @@ def train_neural_network_model(parameters, device, model, train_dataloader, vali
     Train model with the image dataset 
     '''    
 
-    logging.info('3. Train model')
+    logging_info('3. Train model')
 
     # setting seeds
     plt.style.use('ggplot')        
@@ -153,11 +153,11 @@ def train_neural_network_model(parameters, device, model, train_dataloader, vali
 
     # Total parameters and trainable parameters.
     total_params = sum(p.numel() for p in model.parameters())
-    logging.info(f"{total_params:,} total parameters")
+    logging_info(f"{total_params:,} total parameters")
 
     total_trainable_params = sum(
         p.numel() for p in model.parameters() if p.requires_grad)
-    logging.info(f'{total_trainable_params:,} training parameters.')
+    logging_info(f'{total_trainable_params:,} training parameters.')
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(
         params, 
@@ -195,8 +195,8 @@ def train_neural_network_model(parameters, device, model, train_dataloader, vali
     # Training loop
     for epoch in range(parameters['neural_network_model']['number_epochs']):
 
-        logging.info(f'')
-        logging.info(f"Epoch {epoch+1} of {parameters['neural_network_model']['number_epochs']} - starting" + LINE_FEED)
+        logging_info(f'')
+        logging_info(f"Epoch {epoch+1} of {parameters['neural_network_model']['number_epochs']} - starting" + LINE_FEED)
 
         # Reset the training loss histories for the current epoch.
         train_loss_history.reset()
@@ -208,13 +208,13 @@ def train_neural_network_model(parameters, device, model, train_dataloader, vali
         # metric_summary, metric_dice_score_summary = validate(valid_dataloader, model, device)
         metric_summary = validate(valid_dataloader, model, device)
 
-        logging.info(f"Epoch #{epoch+1} train loss: {train_loss_history.value:.3f}")
-        logging.info(f"Epoch #{epoch+1} mAP@0.50:0.95: {metric_summary['map']}")
-        logging.info(f"Epoch #{epoch+1} mAP@0.50: {metric_summary['map_50']}")
-        # logging.info(f"Epoch #{epoch+1} Dice score: {metric_dice_score_summary}")
-        # logging.info(f"Epoch #{epoch+1} f1 score: {metric_f1_score}")
+        logging_info(f"Epoch #{epoch+1} train loss: {train_loss_history.value:.3f}")
+        logging_info(f"Epoch #{epoch+1} mAP@0.50:0.95: {metric_summary['map']}")
+        logging_info(f"Epoch #{epoch+1} mAP@0.50: {metric_summary['map_50']}")
+        # logging_info(f"Epoch #{epoch+1} Dice score: {metric_dice_score_summary}")
+        # logging_info(f"Epoch #{epoch+1} f1 score: {metric_f1_score}")
         end = time.time()
-        logging.info(f"Took {((end - start) / 60):.3f} minutes for epoch {epoch+1}")
+        logging_info(f"Took {((end - start) / 60):.3f} minutes for epoch {epoch+1}")
 
         train_loss_list.append(train_loss)
         map_50_list.append(metric_summary['map_50'])
@@ -222,7 +222,7 @@ def train_neural_network_model(parameters, device, model, train_dataloader, vali
 
         # # setting output results folder 
         # output_results_folder = parameters['training_results']['output_results_folder']
-        # logging.info(f'Results - output_results_folder: {output_results_folder}')
+        # logging_info(f'Results - output_results_folder: {output_results_folder}')
 
         # save the best model till now.
         save_best_model_obj(

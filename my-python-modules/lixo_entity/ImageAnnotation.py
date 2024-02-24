@@ -7,7 +7,6 @@ from lxml import etree
 from dict2xml import dict2xml
 
 from entity.BoundingBox import BoundingBox
-from utils import Utils
 
 class ImageAnnotation:
     def __init__(self, image_name='', image_name_with_extension='', annotation_name = '', 
@@ -246,8 +245,10 @@ class ImageAnnotation:
                bbox_class_id, bbox_center_x_col, bbox_center_y_lin, bbox_height, bbox_width
 
 
-    def get_annotation_file_in_voc_pascal_format(self, path_and_filename_xml_annotation):
+    def get_annotation_in_voc_pascal_format(self, path_and_filename_xml_annotation):
         
+        # print(f'-'*50)
+
         # reading XML file 
         tree = ET.parse(path_and_filename_xml_annotation)
         root = tree.getroot()
@@ -281,36 +282,8 @@ class ImageAnnotation:
                                 bounding_box.lin_point2 = int(child3.text)
                 
                 self.bounding_boxes.append(bounding_box)
-
-
-    def get_annotation_file_in_yolo_v5_format(self, path_and_filename_yolo_annotation, classes):
-
-        # reading text file 
-        data_into_list = Utils.read_text_file(path_and_filename_yolo_annotation)
-
-        # splitting list into bounding box fields
-        bounding_boxes = [data.split(' ') for data in data_into_list]
-
-        # converting types of the string values 
-        for bounding_box in bounding_boxes:
-            id_class = int(bounding_box[0])
-            # bounding_box[1] = float(bounding_box[1])
-            # bounding_box[2] = float(bounding_box[2])
-            # bounding_box[3] = float(bounding_box[3])
-            # bounding_box[4] = float(bounding_box[4])
-
-            # creating new bounding box object 
-            bounding_box = BoundingBox()
-
-            # setting fields
-            # bounding_box.id = object["id"]
-            # bounding_box.class_id = 
-            bounding_box.class_title = classes[id_class]
-            # bounding_box.lin_point1 = object["points"]["exterior"][0][1]
-            # bounding_box.col_point1 = object["points"]["exterior"][0][0]
-            # bounding_box.lin_point2 = object["points"]["exterior"][1][1]
-            # bounding_box.col_point2 = object["points"]["exterior"][1][0]
-
-            # adding bouding box to list 
-            self.bounding_boxes.append(bounding_box)
-            
+    
+        # print(self.image_name)
+        # print(self.height)
+        # print(self.width)
+        # print(self.bounding_boxes[0].toString())

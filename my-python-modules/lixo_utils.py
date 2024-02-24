@@ -13,7 +13,10 @@ Version: 1.0
 import os
 import shutil
 import json 
-# import cv2
+
+import xml.etree.ElementTree as ET
+from lxml import etree
+from dict2xml import dict2xml
 
 # ###########################################
 # Constants
@@ -97,25 +100,6 @@ class Utils:
         # closing text file
         text_file.close()        
 
-    # Read text file 
-    @staticmethod
-    def read_text_file(path_and_filename):
-        # setting annotation file
-        text_file = open(path_and_filename, 'r')
-
-        # reading the file 
-        lines = text_file.readlines()
-
-        # replacing end of line('/n') with ''
-        data_into_list = [line.replace('\n','') for line in lines]
-        
-        # closing text file
-        text_file.close()        
-
-        # returning text in list format 
-        return data_into_list
-
-
     # # Draw bounding box in the image
     # @staticmethod
     # def draw_bounding_box(image, linP1, colP1, linP2, colP2, bgrBoxColor, thickness, label):
@@ -178,6 +162,7 @@ class Utils:
         # returning json formatted
         return json_formatted_str
 
+
     # Get filename from full string 
     @staticmethod
     def get_filename(path_and_filename):
@@ -199,4 +184,23 @@ class Utils:
 
         # returning filename with extension, just filename and the extension 
         return path, filename_with_extension, filename, extension
-                        
+        
+    # @staticmethod
+    # def read_xml_file(filename):
+
+
+    #     tree = ET.parse(filename)
+    #     root = tree.getroot()
+        
+    #     for child = 
+        
+    #     # defining  parameters dictionary
+    #     parameters = {}
+
+    #     # reading parameters file 
+    #     with open(filename) as json_file:
+    #         parameters = json.load(json_file)
+
+    #     # returning  parameters dictionary
+    #     return parameters
+                

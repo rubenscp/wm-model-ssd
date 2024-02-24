@@ -57,8 +57,8 @@ class SaveBestModel:
 
         if current_valid_map > self.best_valid_map:
             self.best_valid_map = current_valid_map
-            print(f"\nBEST VALIDATION mAP: {self.best_valid_map}")
-            print(f"\nSAVING BEST MODEL FOR EPOCH: {epoch+1}\n")
+            logging_info(f"\nBEST VALIDATION mAP: {self.best_valid_map}")
+            logging_info(f"\nSAVING BEST MODEL FOR EPOCH: {epoch+1}\n")
             torch.save({
                 'epoch': epoch+1,
                 'model_state_dict': model.state_dict(),
@@ -155,7 +155,7 @@ def save_loss_plot(
     train_ax.set_xlabel(x_label)
     train_ax.set_ylabel(y_label)
     figure_1.savefig(f"{output_results_folder}/{save_name}.png")
-    print('SAVING PLOTS COMPLETE...')
+    logging_info('SAVING PLOTS COMPLETE...')
 
 def save_mAP(output_results_folder, map_05, map):
     """

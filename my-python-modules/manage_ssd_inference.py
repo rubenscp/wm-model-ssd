@@ -52,6 +52,8 @@ from albumentations.pytorch.transforms import ToTensorV2
 
 # Importing python modules
 from manage_log import *
+from tasks import Tasks
+from entity.AnnotationsStatistic import AnnotationsStatistic
 
 # Import python code from debugger_cafe
 from debugger_cafe.datasets import * 
@@ -80,27 +82,40 @@ def main():
 
     """
 
+    # creating Tasks object 
+    processing_tasks = Tasks()
+
     # setting dictionary initial parameters for processing
     full_path_project = '/home/lovelace/proj/proj939/rubenscp/research/white-mold-applications/wm-model-ssd'
 
     # getting application parameters 
+    processing_tasks.start_task('Getting application parameters')
     parameters_filename = 'wm_model_ssd_parameters.json'
     parameters = get_parameters(full_path_project, parameters_filename)
+    processing_tasks.finish_task('Getting application parameters')
 
     # setting new values of parameters according of initial parameters
+    processing_tasks.start_task('Setting input image folders')
     set_input_image_folders(parameters)
+    processing_tasks.finish_task('Setting input image folders')
 
     # getting last running id
+    processing_tasks.start_task('Getting running id')
     running_id = get_running_id(parameters)
+    processing_tasks.finish_task('Getting running id')
 
     # setting output folder results
+    processing_tasks.start_task('Setting result folders')
     set_result_folders(parameters)
+    processing_tasks.finish_task('Setting result folders')
     
     # creating log file 
+    processing_tasks.start_task('Creating log file')
     logging_create_log(
         parameters['inference_results']['log_folder'], 
         parameters['inference_results']['log_filename']
     )
+    processing_tasks.finish_task('Creating log file')
 
     logging_info('White Mold Research')
     logging_info('Inference of the model SSD (Single Shot Detector)' + LINE_FEED)
@@ -114,25 +129,38 @@ def main():
     logging_info(f'>> Set result folders')
 
     # getting device CUDA
+    processing_tasks.start_task('Getting device CUDA')
     device = get_device(parameters)
+    processing_tasks.finish_task('Getting device CUDA')
 
     # creating new instance of parameters file related to current running
+    processing_tasks.start_task('Saving processing parameters')
     save_processing_parameters(parameters_filename, parameters)
-
-    # loading dataloaders of image dataset for processing
-    # train_dataloader, valid_dataloader, test_dataloader = get_dataloaders(parameters)
-    
+    processing_tasks.finish_task('Saving processing parameters')
+   
     # copying weights file produced by training step 
+    processing_tasks.start_task('Copying weights file used in inference')
     copy_weights_file(parameters)
+    processing_tasks.finish_task('Copying weights file used in inference')
 
     # creating neural network model 
+    processing_tasks.start_task('Creating neural network model')
     model = get_neural_network_model(parameters, device)
+    processing_tasks.finish_task('Creating neural network model')
 
-    # get number of images for inference 
-    show_number_of_images_for_inference(parameters)
+    # getting statistics of input dataset 
+    processing_tasks.start_task('Getting statistics of input dataset')
+    annotation_statistics = get_input_dataset_statistics(parameters)
+    show_input_dataset_statistics(annotation_statistics)
+    processing_tasks.finish_task('Getting statistics of input dataset')
 
     # inference the neural netowrk model
+    processing_tasks.start_task('Running inference of test images dataset')
     inference_neural_network_model(parameters, device, model)
+    processing_tasks.finish_task('Running inference of test images dataset')
+
+    # showing input dataset statistics
+    show_input_dataset_statistics(annotation_statistics)
 
     # printing metrics results 
     
@@ -141,6 +169,11 @@ def main():
     logging_info('')
     logging_info('Finished the inference of the model SSD (Single Shot Detector)')
     logging_info('')
+
+    # printing tasks summary 
+    processing_tasks.finish_processing()
+    logging_info(processing_tasks.to_string())
+
 
 # ###########################################
 # Methods of Level 2
@@ -367,24 +400,38 @@ def get_neural_network_model(parameters, device):
     return model
 
 
-def show_number_of_images_for_inference(parameters):
+# getting statistics of input dataset 
+def get_input_dataset_statistics(parameters):
+    
+    annotation_statistics = AnnotationsStatistic()
+    annotation_statistics.processing_statistics(parameters)
+    return annotation_statistics
+    
+def show_input_dataset_statistics(annotation_statistics):
 
-    logging_info(f'')
-    logging_info(f'>> Show number of test images')
+    logging_info(f'Input dataset statistic')
+    logging_info(annotation_statistics.to_string())
 
-     # getting list of test images for inference 
-    input_image_size = str(parameters['input']['input_dataset']['input_image_size'])
-    test_image_dataset_folder = os.path.join(
-        parameters['processing']['research_root_folder'],
-        parameters['input']['input_dataset']['input_dataset_path'],
-        parameters['input']['input_dataset']['annotation_format'],
-        input_image_size + 'x' + input_image_size,
-        'test'
-    )
 
-    test_images = glob.glob(f"{test_image_dataset_folder}/*.jpg")
+# def show_number_of_images_for_inference(parameters):
 
-    logging_info(f"Number of test images: {len(test_images)}")
+#     logging_info(f'')
+#     logging_info(f'>> Show number of test images')
+
+#      # getting list of test images for inference 
+#     input_image_size = str(parameters['input']['input_dataset']['input_image_size'])
+#     test_image_dataset_folder = os.path.join(
+#         parameters['processing']['research_root_folder'],
+#         parameters['input']['input_dataset']['input_dataset_path'],
+#         parameters['input']['input_dataset']['annotation_format'],
+#         input_image_size + 'x' + input_image_size,
+#         'test'
+#     )
+
+#     test_images = glob.glob(f"{test_image_dataset_folder}/*.jpg")
+
+#     logging_info(f"Number of test images: {len(test_images)}")
+
 
 
 # ###########################################

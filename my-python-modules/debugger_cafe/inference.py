@@ -88,7 +88,7 @@ def inference_neural_network_model(parameters, device, model):
 
         # getting xml annotation of the image 
         image_annotation = ImageAnnotation()
-        image_annotation.get_annotation_in_voc_pascal_format(path_and_filename_xml_annotation)
+        image_annotation.get_annotation_file_in_voc_pascal_format(path_and_filename_xml_annotation)
         # print(image_annotation.toString())
 
         # Get the image file name for saving output later on.

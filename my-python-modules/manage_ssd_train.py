@@ -50,16 +50,15 @@ from torchvision import transforms as torchtrans
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
-# Importing python modules
-from manage_log import *
-
 # Import python code from debugger_cafe
 from debugger_cafe.datasets import * 
 from debugger_cafe.model import * 
 from debugger_cafe.train import * 
 
 # Import python code from White Mold Project 
+from manage_log import *
 from tasks import Tasks
+from entity.AnnotationsStatistic import AnnotationsStatistic
 
 # ###########################################
 # Constants
@@ -148,14 +147,20 @@ def main():
     processing_tasks.start_task('Creating neural network model')
     model = get_neural_network_model(parameters, device)
     processing_tasks.finish_task('Creating neural network model')
+   
+    # getting statistics of input dataset 
+    processing_tasks.start_task('Getting statistics of input dataset')
+    annotation_statistics = get_input_dataset_statistics(parameters)
+    show_input_dataset_statistics(annotation_statistics)
+    processing_tasks.finish_task('Getting statistics of input dataset')
 
     # training neural netowrk model
     processing_tasks.start_task('Training neural netowrk model')
     train_neural_network_model(parameters, device, model, train_dataloader, valid_dataloader)
     processing_tasks.finish_task('Training neural netowrk model')
 
-    # printing metrics results
-    
+    # showing input dataset statistics
+    show_input_dataset_statistics(annotation_statistics)
 
     # finishing model training 
     logging_info('')
@@ -195,9 +200,6 @@ def set_input_image_folders(parameters):
         parameters['input']['input_dataset']['annotation_format'],
         input_image_size + 'x' + input_image_size,
     )
-
-    # print(f'image_dataset_folder: {image_dataset_folder}')
-    # exit()
 
     # setting image dataset folder in processing parameters 
     parameters['processing']['image_dataset_folder'] = image_dataset_folder
@@ -425,6 +427,17 @@ def get_neural_network_model(parameters, device):
     # returning neural network model
     return model
 
+# getting statistics of input dataset 
+def get_input_dataset_statistics(parameters):
+    
+    annotation_statistics = AnnotationsStatistic()
+    annotation_statistics.processing_statistics(parameters)
+    return annotation_statistics
+    
+def show_input_dataset_statistics(annotation_statistics):
+
+    logging_info(f'Input dataset statistic')
+    logging_info(annotation_statistics.to_string())
 
 # ###########################################
 # Methods of Level 3
