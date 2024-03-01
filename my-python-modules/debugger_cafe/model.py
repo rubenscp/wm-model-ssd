@@ -8,7 +8,7 @@ from torchvision.models.detection.ssd import (
 )
 
 # Importing python modules
-from manage_log import *
+from common.manage_log import *
 
 def create_model(num_classes=91, size=300, nms=0.45):
     model_backbone = torchvision.models.resnet34(

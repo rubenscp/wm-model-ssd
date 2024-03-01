@@ -12,7 +12,7 @@ from torch.utils.data import Dataset, DataLoader
 from debugger_cafe.custom_utils import collate_fn, get_train_transform, get_valid_transform
 
 # Importing python modules
-from manage_log import *
+from common.manage_log import *
 
 # The dataset class.
 class CustomDataset(Dataset):
@@ -137,6 +137,10 @@ def create_valid_dataset(dir, resize_to, classes):
     )
     return valid_dataset
 
+def create_test_dataset(dir, resize_to, classes):
+    test_dataset = CustomDataset(dir, resize_to, resize_to, classes)
+    return test_dataset
+
 def create_train_loader(train_dataset, batch_size, num_workers=0):
     train_loader = DataLoader(
         train_dataset,
@@ -147,6 +151,7 @@ def create_train_loader(train_dataset, batch_size, num_workers=0):
         drop_last=False
     )
     return train_loader
+
 def create_valid_loader(valid_dataset, batch_size, num_workers=0):
     valid_loader = DataLoader(
         valid_dataset,
@@ -157,6 +162,17 @@ def create_valid_loader(valid_dataset, batch_size, num_workers=0):
         drop_last=False
     )
     return valid_loader
+
+def create_test_loader(test_dataset, batch_size, num_workers=0):
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        collate_fn=collate_fn,
+        drop_last=False
+    )
+    return test_loader
 
 
 # execute `datasets.py`` using Python command from 

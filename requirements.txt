@@ -11,3 +11,4 @@ pyarrow
 tqdm
 lxml
 dict2xml
+seaborn

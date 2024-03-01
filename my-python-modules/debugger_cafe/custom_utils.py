@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from albumentations.pytorch import ToTensorV2
 # from config import DEVICE, CLASSES
 
-from manage_log import *
+from common.manage_log import *
 
 plt.style.use('ggplot')
 

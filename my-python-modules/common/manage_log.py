@@ -14,7 +14,7 @@ Version: 2.0
 import os
 import logging
 from datetime import datetime
-from utils import Utils
+from common.utils import Utils
 
 def logging_create_log(log_folder, log_filename):
        

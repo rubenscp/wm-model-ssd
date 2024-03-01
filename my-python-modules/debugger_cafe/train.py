@@ -35,7 +35,7 @@ import os
 # torch.multiprocessing.set_sharing_strategy('file_system')
 
 # Importing python modules
-from manage_log import *
+from common.manage_log import *
 
 LINE_FEED = '\n'
 

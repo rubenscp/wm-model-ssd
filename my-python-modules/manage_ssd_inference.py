@@ -51,9 +51,9 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
 # Importing python modules
-from manage_log import *
-from tasks import Tasks
-from entity.AnnotationsStatistic import AnnotationsStatistic
+from common.manage_log import *
+from common.tasks import Tasks
+from common.entity.AnnotationsStatistic import AnnotationsStatistic
 
 # Import python code from debugger_cafe
 from debugger_cafe.datasets import * 
@@ -143,6 +143,11 @@ def main():
     copy_weights_file(parameters)
     processing_tasks.finish_task('Copying weights file used in inference')
 
+    # loading dataloaders of image dataset for processing
+    processing_tasks.start_task('Loading dataloaders of image dataset')
+    test_dataloader = get_dataloaders(parameters)
+    processing_tasks.finish_task('Loading dataloaders of image dataset')
+    
     # creating neural network model 
     processing_tasks.start_task('Creating neural network model')
     model = get_neural_network_model(parameters, device)
@@ -157,6 +162,7 @@ def main():
     # inference the neural netowrk model
     processing_tasks.start_task('Running inference of test images dataset')
     inference_neural_network_model(parameters, device, model)
+    # inference_neural_network_model_new_version(parameters, device, model, test_dataloader)
     processing_tasks.finish_task('Running inference of test images dataset')
 
     # showing input dataset statistics
@@ -371,7 +377,36 @@ def copy_weights_file(parameters):
         parameters['input']['inference']['weights_filename'],
         parameters['input']['inference']['weights_folder'],
         parameters['inference_results']['weights_folder']
-    ) 
+    )
+
+def get_dataloaders(parameters):
+    '''
+    Get dataloaders of testing from image dataset 
+    '''
+
+    logging_info(f'')
+    logging_info(f'>> Get dataset and dataloaders of the images for processing')
+
+    # getting datasets 
+    test_dataset = create_test_dataset(
+        parameters['processing']['image_dataset_folder_test'], 
+        parameters['neural_network_model']['resize_of_input_image'], 
+        parameters['neural_network_model']['classes'], 
+    )
+   
+    logging.info(f'Getting datasets')
+    logging.info(f'   Number of testing images: {len(test_dataset)}')
+    logging.info(f'   Total                   : {len(test_dataset)}')
+    logging_info(f'')
+
+    # getting dataloaders
+    test_dataloader = create_test_loader(
+        test_dataset, 
+        parameters['neural_network_model']['number_workers']
+    )
+
+    # returning dataloaders for processing 
+    return test_dataloader 
 
 def get_neural_network_model(parameters, device):
     '''
@@ -404,6 +439,7 @@ def get_neural_network_model(parameters, device):
 def get_input_dataset_statistics(parameters):
     
     annotation_statistics = AnnotationsStatistic()
+    # datasets = ['test'] 
     annotation_statistics.processing_statistics(parameters)
     return annotation_statistics
     

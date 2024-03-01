@@ -97,3 +97,21 @@ class BoundingBox:
         # returning result
         return text
         
+    def get_box(self):
+        box = [0, 0, 0, 0]
+        box[0] = self.col_point1
+        box[1] = self.lin_point1
+        box[2] = self.col_point2
+        box[3] = self.lin_point2
+        
+        # returning bounding box
+        return box
+
+    def get_class_index(self, classes, class_name):
+        for index, value in enumerate(classes):
+            if class_name == value:
+                # success
+                return index
+
+        # return not found
+        return None

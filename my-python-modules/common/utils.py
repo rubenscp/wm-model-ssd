@@ -13,7 +13,11 @@ Version: 1.0
 import os
 import shutil
 import json 
-# import cv2
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Importing python modules
+from common.manage_log import *
 
 # ###########################################
 # Constants
@@ -200,3 +204,36 @@ class Utils:
         # returning filename with extension, just filename and the extension 
         return path, filename_with_extension, filename, extension
                         
+
+    # Extract from 
+    # https://stackoverflow.com/questions/20927368/how-to-normalize-a-confusion-matrix
+    def save_plot_confusion_matrix(confusion_matrix, path_and_filename, title,
+                                   format, x_labels_names, y_labels_names):
+        
+        # logging_info(f'Plotting confusion matrix normalized')
+        # logging_info(f'classes: {classes}')
+
+        # x_labels_names = classes.copy()
+        # y_labels_names = classes.copy()
+        # x_labels_names.append('Ghost predictions')    
+        # y_labels_names.append('Undetected objects')
+
+        fig, ax = plt.subplots(figsize=(14,10))
+        heatmap_axis = sns.heatmap(
+            confusion_matrix, 
+            annot=True, fmt=format, 
+            xticklabels=x_labels_names, 
+            yticklabels=y_labels_names,
+            linewidth=0.5,
+            cmap="crest"
+        )
+        plt.title(title + LINE_FEED)
+        plt.ylabel('Actual (Ground Truth)' + LINE_FEED)
+        plt.xlabel('Predicted (By model)')
+        plt.show(block=False)
+        heatmap_axis.xaxis.tick_top()
+        fig.savefig(path_and_filename)
+
+
+    # def format_value(value, format):
+    #     formatted_value = {value }

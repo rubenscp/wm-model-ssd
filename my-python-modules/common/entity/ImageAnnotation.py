@@ -6,8 +6,15 @@ import xml.etree.ElementTree as ET
 from lxml import etree
 from dict2xml import dict2xml
 
-from entity.BoundingBox import BoundingBox
-from utils import Utils
+import torch 
+
+from common.entity.BoundingBox import BoundingBox
+from common.utils import Utils
+
+# ###########################################
+# Constants
+# ###########################################
+LINE_FEED = '\n'
 
 class ImageAnnotation:
     def __init__(self, image_name='', image_name_with_extension='', annotation_name = '', 
@@ -25,7 +32,12 @@ class ImageAnnotation:
         text = 'Image: ' + self.image_name + \
                ' height: ' + str(self.height) + \
                ' width: ' + str(self.width) + \
-               ' bounding boxes: ' + str(len(self.bounding_boxes))
+               ' bounding boxes: ' + str(len(self.bounding_boxes)) + \
+               LINE_FEED
+
+        for bounding_box in self.bounding_boxes:
+            text += bounding_box.to_string() + LINE_FEED
+
         return text
 
     def set_annotation_fields_in_supervisely_format(self, image_name, image_name_with_extension,
@@ -216,7 +228,7 @@ class ImageAnnotation:
         for bounding_box in self.bounding_boxes:
 
             # annotation_text += bounding_box.get_id_class_SSD()
-            bbox_class_id= 0
+            bbox_class_id = bounding_box.get_id_class_SSD()
 
             # calculating the central point of bounding box 
             bbox_center_x_col = bounding_box.col_point1 + (bounding_box.col_point2 - bounding_box.col_point1) / 2.0
@@ -314,3 +326,26 @@ class ImageAnnotation:
             # adding bouding box to list 
             self.bounding_boxes.append(bounding_box)
             
+
+    def get_tensor_target(self, classes):
+
+        # creating target object 
+        target = []
+
+        # getting bounding boxes in format fot target object 
+        target_boxes = []
+        target_labels = []
+        for bounding_box in self.bounding_boxes:
+            target_boxes.append(bounding_box.get_box())
+            class_ind = bounding_box.get_class_index(classes, bounding_box.class_title)
+            target_labels.append(class_ind)
+
+        # setting target dictionary 
+        item = {
+            "boxes": torch.tensor(target_boxes, dtype=torch.float),
+            "labels": torch.tensor(target_labels)
+            }
+        target.append(item)
+
+        # returning target object
+        return target 

@@ -7,13 +7,13 @@ Advisors:
     Prof. Dr. Díbio Leandro Borges - coadvisor at CIC-UnB
     Prof. Dr. Murillo Lobo Jr. - coadvisor at Embrapa Rice and Beans
 Date: 23/02/2024
-Version: 1.0
+Version: 1.1
 """
 
 # Importing python modules
-from utils import *
-from manage_log import * 
-from entity.ImageAnnotation import ImageAnnotation
+from common.utils import *
+from common.manage_log import * 
+from common.entity.ImageAnnotation import ImageAnnotation
 
 # ###########################################
 # Constants
@@ -55,7 +55,7 @@ class AnnotationsStatistic:
             )
 
         elif parameters['input']['input_dataset']['annotation_format'] == 'faster_rcnn':
-            self.process_ssd_pascal_voc_model(
+            self.process_ssd_pascal_voc_format(
                             annotation_format, input_image_size, classes,
                             image_dataset_folder_train,
                             image_dataset_folder_valid, 

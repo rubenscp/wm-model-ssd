@@ -56,9 +56,9 @@ from debugger_cafe.model import *
 from debugger_cafe.train import * 
 
 # Import python code from White Mold Project 
-from manage_log import *
-from tasks import Tasks
-from entity.AnnotationsStatistic import AnnotationsStatistic
+from common.manage_log import *
+from common.tasks import Tasks
+from common.entity.AnnotationsStatistic import AnnotationsStatistic
 
 # ###########################################
 # Constants
@@ -376,7 +376,6 @@ def get_dataloaders(parameters):
     # torch.unique(train_folder.targets, return_counts=True)
     # print(len(dataloader.dataset))
     
-
     logging.info(f'Getting datasets')
     logging.info(f'   Number of training images  : {len(train_dataset)}')
     logging.info(f'   Number of validation images: {len(valid_dataset)}')

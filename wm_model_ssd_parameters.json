@@ -3,7 +3,7 @@
         "input_dataset": {
             "input_image_size": 300,
             "annotation_format": "ssd_pascal_voc",
-            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0113-15ds/splitting_by_images/2-output-dataset"
+            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0003-15ds/splitting_by_images/2-output-dataset"
         },
         "inference": {
             "weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights",
@@ -16,6 +16,7 @@
         "batch_size": 16,
         "resize_of_input_image": 300,
         "threshold": 0.5,
+        "iou_threshold": 0.5,
         "number_workers": 2,
         "classes": [
             "__background__", "Apothecium", "Imature Sclerotium", "Mature Sclerotium", "White Mold", "class 5", "class 6", "class 7", "class 8", "class 9", "class 10",

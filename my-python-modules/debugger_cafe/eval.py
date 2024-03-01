@@ -7,7 +7,7 @@ from model import create_model
 from datasets import create_valid_dataset, create_valid_loader
 
 # Importing python modules
-from manage_log import *
+from common.manage_log import *
 
 # Evaluation function
 def validate(valid_data_loader, model):
