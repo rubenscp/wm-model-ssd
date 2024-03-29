@@ -3,19 +3,19 @@
         "input_dataset": {
             "input_image_size": 300,
             "annotation_format": "ssd_pascal_voc",
-            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0003-15ds/splitting_by_images/2-output-dataset"
+            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0003-15ds-300x300/splitting_by_images/2-output-dataset"
         },
         "inference": {
-            "weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights",
-            "weights_filename": "ssd300_vgg16-running-0001-300x300-best_model.pth"
+            "weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights/training-300x300-with-100-epochs",
+            "weights_filename": "ssd300_vgg16-running-0065-300x300-best_model.pth"
         }    
     },
     "neural_network_model": {
         "model_name": "ssd300_vgg16",
-        "number_epochs": 20,
-        "batch_size": 16,
+        "number_epochs": 100,
+        "batch_size": 128,
         "resize_of_input_image": 300,
-        "threshold": 0.5,
+        "threshold": 0.4,
         "iou_threshold": 0.5,
         "number_workers": 2,
         "classes": [
@@ -43,7 +43,8 @@
         "image_dataset_folder": "defined during training/inference ",
         "image_dataset_folder_train": "defined during training/inference ",
         "image_dataset_folder_valid": "defined during training/inference ",
-        "image_dataset_folder_test": "defined during training/inference "
+        "image_dataset_folder_test": "defined during training/inference ",
+        "show_statistics_of_input_dataset": false
     },
     "training_results": {
         "main_folder": "white-mold-results",        
@@ -57,16 +58,16 @@
         "log_folder": "log",
         "log_filename": "wm-model-ssd-train"
     },
-    "inference_results": {
+    "test_results": {
         "main_folder": "white-mold-results",        
-        "model_folder": "defined during training/inference",
-        "action_folder": "inference",
-        "running_folder": "defined during training/inference",
+        "model_folder": "defined during training/test",
+        "action_folder": "test",
+        "running_folder": "defined during training/test",
         "processing_parameters_folder": "processing-parameters",
         "weights_folder": "weights",
         "metrics_folder": "metrics",
-        "inferenced_image_folder": "inferenced-image",
+        "inferenced_image_folder": "tested-image",
         "log_folder": "log",
-        "log_filename": "wm-model-ssd-inference"
+        "log_filename": "wm-model-ssd-test"
     }
 }

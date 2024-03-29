@@ -9,6 +9,8 @@ from albumentations.pytorch import ToTensorV2
 
 from common.manage_log import *
 
+LINE_FEED = '\n'
+
 plt.style.use('ggplot')
 
 # This class keeps track of the training and validation loss values
@@ -138,10 +140,11 @@ def save_model(epoch, model, optimizer, output_results_folder, weights_base_file
 
 def save_loss_plot(
     output_results_folder, 
-    train_loss_list, 
-    x_label='iterations',
-    y_label='train loss',
-    save_name='train_loss'
+    train_loss_list,
+    title,
+    plot_filename='train_loss',
+    x_label='Epochs',
+    y_label='Train Loss',
 ):
     """
     Function to save both train loss graph.
@@ -154,10 +157,14 @@ def save_loss_plot(
     train_ax.plot(train_loss_list, color='tab:blue')
     train_ax.set_xlabel(x_label)
     train_ax.set_ylabel(y_label)
-    figure_1.savefig(f"{output_results_folder}/{save_name}.png")
+    plt.title(title + LINE_FEED)
+    # do not print point values 
+    # for i, value in enumerate(train_loss_list):
+    #     plt.annotate('%.2f' % value, xy=(i, value), size=8)
+    figure_1.savefig(f"{output_results_folder}/{plot_filename}.png")
     logging_info('SAVING PLOTS COMPLETE...')
 
-def save_mAP(output_results_folder, map_05, map):
+def save_mAP(output_results_folder, map_05, map, title, plot_filename):
     """
     Saves the mAP@0.5 and mAP@0.5:0.95 per epoch.
     :param output_results_folder: Path to save the graphs.
@@ -177,4 +184,5 @@ def save_mAP(output_results_folder, map_05, map):
     ax.set_xlabel('Epochs')
     ax.set_ylabel('mAP')
     ax.legend()
-    figure.savefig(f"{output_results_folder}/map.png")
+    plt.title(title + LINE_FEED)  
+    figure.savefig(f"{output_results_folder}/{plot_filename}.png")

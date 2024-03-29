@@ -99,11 +99,6 @@ class BoundingBox:
         
     def get_box(self):
         box = [0, 0, 0, 0]
-        # box[0] = self.lin_point1
-        # box[1] = self.col_point1
-        # box[2] = self.lin_point2
-        # box[3] = self.col_point2
-
         box[0] = self.col_point1
         box[1] = self.lin_point1
         box[2] = self.col_point2

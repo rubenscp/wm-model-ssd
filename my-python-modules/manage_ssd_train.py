@@ -148,11 +148,12 @@ def main():
     model = get_neural_network_model(parameters, device)
     processing_tasks.finish_task('Creating neural network model')
    
-    # getting statistics of input dataset 
-    processing_tasks.start_task('Getting statistics of input dataset')
-    annotation_statistics = get_input_dataset_statistics(parameters)
-    show_input_dataset_statistics(annotation_statistics)
-    processing_tasks.finish_task('Getting statistics of input dataset')
+    # getting statistics of input dataset
+    if parameters['processing']['show_statistics_of_input_dataset']:
+        processing_tasks.start_task('Getting statistics of input dataset')
+        annotation_statistics = get_input_dataset_statistics(parameters)
+        show_input_dataset_statistics(parameters, annotation_statistics)
+        processing_tasks.finish_task('Getting statistics of input dataset')
 
     # training neural netowrk model
     processing_tasks.start_task('Training neural netowrk model')
@@ -160,7 +161,8 @@ def main():
     processing_tasks.finish_task('Training neural netowrk model')
 
     # showing input dataset statistics
-    show_input_dataset_statistics(annotation_statistics)
+    # if parameters['processing']['show_statistics_of_input_dataset']:
+    #     show_input_dataset_statistics(annotation_statistics)
 
     # finishing model training 
     logging_info('')
@@ -170,6 +172,8 @@ def main():
     processing_tasks.finish_processing()
     logging_info(processing_tasks.to_string())
 
+    # copying processing files to log folder 
+    # copy_processing_files_to_log(parameters)
 
 # ###########################################
 # Methods of Level 2
@@ -385,10 +389,12 @@ def get_dataloaders(parameters):
     # getting dataloaders
     train_dataloader = create_train_loader(
         train_dataset, 
+        parameters['neural_network_model']['batch_size'],
         parameters['neural_network_model']['number_workers']
     )
     valid_dataloader = create_valid_loader(
         valid_dataset,
+        parameters['neural_network_model']['batch_size'],
         parameters['neural_network_model']['number_workers']
     )
     test_dataloader = None
@@ -430,13 +436,40 @@ def get_neural_network_model(parameters, device):
 def get_input_dataset_statistics(parameters):
     
     annotation_statistics = AnnotationsStatistic()
-    annotation_statistics.processing_statistics(parameters)
+    steps = ['train', 'valid', 'test'] 
+    annotation_statistics.processing_statistics(parameters, steps)
     return annotation_statistics
     
-def show_input_dataset_statistics(annotation_statistics):
+def show_input_dataset_statistics(parameters, annotation_statistics):
 
     logging_info(f'Input dataset statistic')
     logging_info(annotation_statistics.to_string())
+    path_and_filename = os.path.join(
+        parameters['training_results']['metrics_folder'],
+        parameters['neural_network_model']['model_name'] + '_annotations_statistics.xlsx',
+    )
+    annotation_format = parameters['input']['input_dataset']['annotation_format']
+    input_image_size = parameters['input']['input_dataset']['input_image_size']
+    classes = (parameters['neural_network_model']['classes'])[1:5]
+    annotation_statistics.save_annotations_statistics(
+        path_and_filename,
+        annotation_format,
+        input_image_size,
+        classes
+    )
+
+def copy_processing_files_to_log(parameters):
+    input_path = os.path.join(
+        parameters['processing']['research_root_folder'],
+        parameters['processing']['project_name_folder'],
+    )
+    output_path = parameters['training_results']['log_folder']    
+    input_filename = output_filename = 'ssd_train_errors'
+    Utils.copy_file(input_filename, input_path, output_filename, output_path)
+
+    input_filename = output_filename = 'ssd_train_output'
+    Utils.copy_file(input_filename, input_path, output_filename, output_path)
+
 
 # ###########################################
 # Methods of Level 3

@@ -20,18 +20,22 @@ import torch
 import matplotlib.pyplot as plt
 import pandas as pd
 # from sklearn import metrics
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # from torchvision import ops
-# from torchmetrics.detection import IntersectionOverUnion 
-# from torchmetrics.detection import GeneralizedIntersectionOverUnion 
-# from torchmetrics.detection import MeanAveragePrecision
-# from torchmetrics.classification import MulticlassConfusionMatrix
+from torchmetrics.classification import MulticlassConfusionMatrix
+from torchmetrics.detection import MeanAveragePrecision
+# from torchmetrics.detection import Accuracy
+from torchmetrics.classification import MulticlassPrecision 
+# from torchmetrics.detection import Recall 
+# from torchmetrics.detection import F1Score
+# from torchmetrics.detection import Dice
+# from torchmetrics.detection import Specificity
 
 # import seaborn as sns
 
 # from torchvision.models.detection import box_iou
-from torchvision.ops import * 
+# from torchvision.ops import * 
 
 # Importing python modules
 from common.manage_log import *
@@ -41,38 +45,42 @@ from common.manage_log import *
 # ###########################################
 LINE_FEED = '\n'
 
-class Metrics:
+class MetricsTorchmetrics:
 
-    def __init__(self, model=None):
+    def __init__(self, model=None, number_of_classes=0):
         self.model = model
-        # This list store details of all inferenced images (image_name, targets_list, preds_list)
-        self.inferenced_images = []
-        self.images_bounding_boxes = []
-        # self.preds = []
-        # self.target = []
-        self.result = None
-        self.full_confusion_matrix = None
-        self.full_confusion_matrix_normalized = None
+        self.preds = []
+        self.targets = []
+        self.number_of_classes = number_of_classes
         self.confusion_matrix = None
-        self.confusion_matrix_normalized = None
-        self.confusion_matrix_summary = {
-            'number_of_images': 0,
-            'number_of_bounding_boxes_target': 0,
-            'number_of_bounding_boxes_predicted': 0,
-            'number_of_bounding_boxes_predicted_with_target': 0,
-            'number_of_ghost_predictions': 0,
-            'number_of_undetected_objects': 0,
-        }
-        self.counts_per_class = []
+        self.mean_average_precision = None
+        self.precision = None
 
-        self.tp_per_classes = []
-        self.fp_per_classes = []
-        self.fn_per_classes = []
-        self.tn_per_classes = []
-        self.tp_model = 0
-        self.fp_model = 0
-        self.fn_model = 0
-        self.tn_model = 0
+        # self.inferenced_images = []
+        # self.images_bounding_boxes = []
+        # self.result = None
+        # self.full_confusion_matrix = None
+        # self.full_confusion_matrix_normalized = None
+        # self.confusion_matrix = None
+        # self.confusion_matrix_normalized = None
+        # self.confusion_matrix_summary = {
+        #     'number_of_images': 0,
+        #     'number_of_bounding_boxes_target': 0,
+        #     'number_of_bounding_boxes_predicted': 0,
+        #     'number_of_bounding_boxes_predicted_with_target': 0,
+        #     'number_of_ghost_predictions': 0,
+        #     'number_of_undetected_objects': 0,
+        # }
+        # self.counts_per_class = []
+
+        # self.tp_per_classes = []
+        # self.fp_per_classes = []
+        # self.fn_per_classes = []
+        # self.tn_per_classes = []
+        # self.tp_model = 0
+        # self.fp_model = 0
+        # self.fn_model = 0
+        # self.tn_model = 0
 
     def to_string(self):
         text = LINE_FEED + 'Metrics' + LINE_FEED + LINE_FEED
@@ -83,11 +91,100 @@ class Metrics:
         # text += str(self.target) + LINE_FEED
         return text
 
-    def set_target(self, target):
-        self.target = target 
+    def add_targets(self, targets):
+        # targets = torch.Tensor(targets)
+        self.targets.append(targets)
+        # logging_info(f'add_targets 1 targets: {targets}')
+        # logging_info(f'add_targets 2 self.targets: {self.targets}')
         
-    def set_preds(self, preds):
-        self.preds = preds
+    def add_preds(self, preds):
+        # preds = torch.Tensor(preds)
+        self.preds.append(preds)
+        # logging_info(f'add_preds 1 preds: {preds}')
+        # logging_info(f'add_preds 2 self.preds: {self.preds}')
+
+    def compute_confusion_matrix(self):
+        logging_info(f'Computing Confusion Matrix')
+
+        target = torch.Tensor([2, 1, 0, 0])
+        preds = torch.Tensor([[0.16, 0.26, 0.58],
+                        [0.22, 0.61, 0.17],
+                        [0.71, 0.09, 0.20],
+                        [0.05, 0.82, 0.13]])
+        logging_info(f'target: {target}')
+        logging_info(f'target.shape: {target.shape}')
+        logging_info(f'preds: {preds}')
+        logging_info(f'preds.shape: {preds.shape}')
+        metric = MulticlassConfusionMatrix(num_classes=3)
+        cm = metric(preds, target)
+        logging_info(f'cm: {cm}')
+
+        logging_info(f'MultilabelConfusionMatrix')
+
+        from torch import tensor
+        from torchmetrics.classification import MultilabelConfusionMatrix
+        # target = tensor([[0, 1, 0], [1, 0, 1]])
+        target = tensor([[0], [1], [0], [1]])
+        preds = tensor([[0, 0, 1], [1, 0, 1], [1], []])
+        logging_info(f'target: {target}')
+        logging_info(f'target.shape: {target.shape}')
+        logging_info(f'preds: {preds}')
+        logging_info(f'preds.shape: {preds.shape}')
+        metric = MultilabelConfusionMatrix(num_labels=3)
+        cml = metric(preds, target)
+        logging_info(f'cml: {cml}')
+        
+        exit()
+
+        target_labels = []
+        preds_labels = []
+        for item in self.targets:
+            target_labels.append(item['labels'].numpy())
+        for item in self.preds:
+            preds_labels.append(item['labels'].numpy())
+        logging_info(f'target_labels: {target_labels}')
+        logging_info(f'preds_labels: {preds_labels}')
+                
+        metric = MulticlassConfusionMatrix(num_classes=self.number_of_classes)
+        # logging_info(f'self.targets: {self.targets}')
+        # logging_info(f'self.preds: {self.preds}')
+        # self.confusion_matrix(self.preds, self.targets)
+        self.confusion_matrix = metric(preds_labels, target_labels)
+        logging_info(f'self.confusion_matrix: {self.confusion_matrix}')
+
+        exit()
+
+
+    def compute_mean_average_precision(self):
+        logging_info(f'Computing Mean Average Precision')
+        metric = MeanAveragePrecision()
+        logging_info(f'self.targets: {self.targets}')
+        logging_info(f'self.preds: {self.preds}')
+        metric.update(self.preds, self.targets)
+        self.mean_average_precision = metric.compute()
+        logging_info(f'self.mean_average_precision: {self.mean_average_precision}')
+
+    def compute_precision(self):
+        logging_info(f'Computing Multiclass Precision')
+        metric = MulticlassPrecision(num_classes=self.number_of_classes)
+        logging_info(f'self.targets: {self.targets}')
+        logging_info(f'self.preds: {self.preds}')
+        self.precision = metric(self.preds, self.targets)
+        logging_info(f'self.precision: {self.precision}')
+
+    # def compute_precision(self):
+    #     logging_info(f'Computing Precision')
+    #     precision = Precision(task='multiclass', average='macro', num_classes=self.number_of_classes)
+    #     logging_info(f'self.targets: {self.targets}')
+    #     logging_info(f'self.preds: {self.preds}')
+    #     self.precision = precision(self.preds, self.targets)        
+    #     logging_info(f'self.precision: {self.precision}')
+
+
+
+
+    # =============================================================================
+
 
     # def get_target_size(self):
     #     # counting number of bounding boxes
@@ -108,30 +205,30 @@ class Metrics:
     #     # returning number of bounding boxes predicted
     #     return count
 
-    def get_predicted_bounding_boxes(self, boxes, scores, labels):
+    # def get_predicted_bounding_boxes(self, boxes, scores, labels):
             
-        # creating predicted object 
-        predicted = []
+    #     # creating predicted object 
+    #     predicted = []
 
-        # getting bounding boxes in format fot predicted object 
-        predicted_boxes = []
-        predicted_scores = []
-        predicted_labels = []
-        for i, box in enumerate(boxes):        
-            predicted_boxes.append(box)
-            predicted_scores.append(scores[i])
-            predicted_labels.append(labels[i])
+    #     # getting bounding boxes in format fot predicted object 
+    #     predicted_boxes = []
+    #     predicted_scores = []
+    #     predicted_labels = []
+    #     for i, box in enumerate(boxes):        
+    #         predicted_boxes.append(box)
+    #         predicted_scores.append(scores[i])
+    #         predicted_labels.append(labels[i])
 
-        # setting predicted dictionary 
-        item = {
-            "boxes": torch.tensor(predicted_boxes, dtype=torch.float),
-            "scores": torch.tensor(predicted_scores, dtype=torch.float),
-            "labels": torch.tensor(predicted_labels)
-            }
-        predicted.append(item)
+    #     # setting predicted dictionary 
+    #     item = {
+    #         "boxes": torch.tensor(predicted_boxes, dtype=torch.float),
+    #         "scores": torch.tensor(predicted_scores, dtype=torch.float),
+    #         "labels": torch.tensor(predicted_labels)
+    #         }
+    #     predicted.append(item)
 
-        # returning predicted object
-        return predicted 
+    #     # returning predicted object
+    #     return predicted 
 
     def set_details_of_inferenced_image(self, image_name, targets, preds):
 
@@ -188,7 +285,7 @@ class Metrics:
         self.images_bounding_boxes.append(image_bounding_box)
 
 
-    def compute_confusion_matrix(self, model_name, num_classes, threshold, iou_threshold, metrics_folder):
+    def compute_confusion_matrix_old(self, model_name, num_classes, threshold, iou_threshold, metrics_folder):
 
         # Inspired from:
         # https://medium.com/@tenyks_blogger/multiclass-confusion-matrix-for-object-detection-6fc4b0135de6

@@ -228,14 +228,13 @@ class Utils:
             xticklabels=x_labels_names, 
             yticklabels=y_labels_names,
             linewidth=0.5,
-            cmap="crest",
-            annot_kws={'size': 12}
+            cmap="crest"
         )
         plt.title(title + LINE_FEED)
-        plt.xlabel('Actual (Ground Truth)')
-        plt.ylabel('Predicted (By the model)')
+        plt.ylabel('Actual (Ground Truth)' + LINE_FEED)
+        plt.xlabel('Predicted (By model)')
         plt.show(block=False)
-        heatmap_axis.xaxis.tick_bottom()
+        heatmap_axis.xaxis.tick_top()
         fig.savefig(path_and_filename)
 
     @staticmethod
@@ -276,13 +275,11 @@ class Utils:
 
         # preparing columns name to list
         column_names = np.hstack(('', x_labels_names))
-        print(f'column_names: {column_names}')
 
         # building sheet
         list = []
         i = 0
         for item in confusion_matrix:
-            print(f'item: {item}')
             row = np.hstack((y_labels_names[i], item))
             list.append(row.tolist())
             i += 1
@@ -296,60 +293,43 @@ class Utils:
         # writing excel file from dataframe
         df.to_excel(path_and_filename, sheet_name='confusion_matrix', index=False)
 
-    # @staticmethod
-    # def save_metrics_excel_old(
-    #     path_and_filename, model_name, 
-    #     model_accuracy, model_precision, 
-    #     model_recall, model_f1_score, 
-    #     model_dice, model_specificity,
-    #     model_map, model_map50, model_map75, 
-    #     number_of_images,
-    #     number_of_bounding_boxes_target,
-    #     number_of_bounding_boxes_predicted,
-    #     number_of_bounding_boxes_predicted_with_target,
-    #     number_of_ghost_predictions,
-    #     number_of_undetected_objects,
-    #     ):
-
-    #     # preparing columns name to list
-    #     column_names = ['A', 'B']
-
-    #     # building sheet
-    #     list = []
-    #     list.append(['Model', f'{model_name}'])
-    #     list.append(['Accuracy', f'{model_accuracy:.4f}'])
-    #     list.append(['Precision', f'{model_precision:.4f}'])
-    #     list.append(['Recall', f'{model_recall:.4f}'])
-    #     list.append(['F1-score ', f'{model_f1_score:.4f}'])
-    #     list.append(['Dice', f'{model_dice:.4f}'])
-    #     list.append(['Specificity', f'{model_specificity:.4f}'])
-    #     list.append(['map', f'{model_map:.4f}'])
-    #     list.append(['map50', f'{model_map50:.4f}'])
-    #     list.append(['map75', f'{model_map75:.4f}'])
-    #     list.append(['', ''])
-    #     list.append(['Summary of Bounding Boxes', ''])
-    #     list.append(['Total number of images', number_of_images])
-    #     list.append(['Bounding boxes target', number_of_bounding_boxes_target])
-    #     list.append(['Bounding boxes predicted', number_of_bounding_boxes_predicted])
-    #     list.append(['Bounding boxes predicted with target', number_of_bounding_boxes_predicted_with_target])
-    #     list.append(['Number of ghost preditions', number_of_ghost_predictions])
-    #     list.append(['Number of undetected objects', number_of_undetected_objects])
-
-    #     # creating dataframe from list        
-    #     df = pd.DataFrame(list, columns=column_names)
-
-    #     # writing excel file from dataframe
-    #     df.to_excel(path_and_filename, sheet_name='summary_metrics', index=False)
-
-
     @staticmethod
-    def save_metrics_excel(path_and_filename, sheet_name,sheet_list):
+    def save_metrics_from_confusion_matrix_excel(
+        path_and_filename, model_name, 
+        model_accuracy, model_precision, 
+        model_recall, model_f1_score, 
+        model_specificity, model_dice,
+        number_of_images,
+        number_of_bounding_boxes_target,
+        number_of_bounding_boxes_predicted,
+        number_of_bounding_boxes_predicted_with_target,
+        number_of_ghost_predictions,
+        number_of_undetected_objects,
+        ):
 
         # preparing columns name to list
         column_names = ['A', 'B']
 
+        # building sheet
+        list = []
+        list.append(['Model', f'{model_name}'])
+        list.append(['Accuracy', f'{model_accuracy:.4f}'])
+        list.append(['Precision', f'{model_precision:.4f}'])
+        list.append(['Recall', f'{model_recall:.4f}'])
+        list.append(['F1-score ', f'{model_f1_score:.4f}'])
+        list.append(['Dice', f'{model_dice:.4f}'])
+        list.append(['Specificity', f'{model_specificity:.4f}'])
+        list.append(['', ''])
+        list.append(['Summary of Bounding Boxes', ''])
+        list.append(['Total number of images', number_of_images])
+        list.append(['Bounding boxes target', number_of_bounding_boxes_target])
+        list.append(['Bounding boxes predicted', number_of_bounding_boxes_predicted])
+        list.append(['Bounding boxes predicted with target', number_of_bounding_boxes_predicted_with_target])
+        list.append(['Number of ghost preditions', number_of_ghost_predictions])
+        list.append(['Number of undetected objects', number_of_undetected_objects])
+
         # creating dataframe from list        
-        df = pd.DataFrame(sheet_list, columns=column_names)
+        df = pd.DataFrame(list, columns=column_names)
 
         # writing excel file from dataframe
         df.to_excel(path_and_filename, sheet_name='summary_metrics', index=False)

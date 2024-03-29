@@ -64,15 +64,12 @@ class Metrics:
             'number_of_undetected_objects': 0,
         }
         self.counts_per_class = []
-
-        self.tp_per_classes = []
-        self.fp_per_classes = []
-        self.fn_per_classes = []
-        self.tn_per_classes = []
+        # self.counts_of_model = []
         self.tp_model = 0
-        self.fp_model = 0
         self.fn_model = 0
+        self.fp_model = 0
         self.tn_model = 0
+
 
     def to_string(self):
         text = LINE_FEED + 'Metrics' + LINE_FEED + LINE_FEED
@@ -217,13 +214,13 @@ class Metrics:
         # processing all inferenced images 
         for inferenced_image in self.inferenced_images:
 
-            # logging_info(f' inferenced_image: {inferenced_image}')
+            logging_info(f' inferenced_image: {inferenced_image}')
 
             # getting target and predictions bounding boxes for evaluation             
             targets = inferenced_image["targets_list"]
             preds = inferenced_image["preds_list"]
-            # logging_info(f'targets: {targets}')
-            # logging_info(f'preds: {preds}')
+            logging_info(f'targets: {targets}')
+            logging_info(f'preds: {preds}')
             number_of_bounding_boxes_target += len(targets[0]['boxes'])    
 
             # evaluating predictions bounding boxes
@@ -353,8 +350,8 @@ class Metrics:
     # 1) https://stackoverflow.com/questions/43697980/is-there-something-already-implemented-in-python-to-calculate-tp-tn-fp-and-fn
     # 2) https://stackoverflow.com/questions/75478099/how-to-extract-performance-metrics-from-confusion-matrix-for-multiclass-classifi?newreg=c9549e71afff4f13982ca151adedfbd5
     # 3) https://www.youtube.com/watch?v=FAr2GmWNbT0
-    # 4) https://www.linkedin.com/pulse/yolov8-projects-1-metrics-loss-functions-data-formats-akbarnezhad/ --> EXCCELENT
-    def compute_metrics_from_confusion_matrix_deactivated(self):
+
+    def compute_metrics_from_confusion_matrix(self):
         """
         Obtain TP, FN FP, and TN for each class in the confusion matrix
         """
@@ -425,47 +422,6 @@ class Metrics:
         # logging_info(f'counts_model: {self.counts_model}')
         # logging_info(f'counts_list: {counts_list}')             
 
-
-    def compute_metrics_from_confusion_matrix(self):
-        """
-        Obtain TP, FN FP, and TN for each class in the confusion matrix
-        """
-
-        logging_info(f'confusion: {LINE_FEED}{self.full_confusion_matrix}')
-
-        self.tp_per_classes = []
-        self.fp_per_classes = []
-        self.fn_per_classes = []
-        self.tn_per_classes = []
-        self.tp_model = 0
-        self.fp_model = 0
-        self.fn_model = 0
-        self.tn_model = 0
-
-        cm_fp = self.full_confusion_matrix[1:-1, 1:]
-        self.tp_per_classes = cm_fp.diagonal()
-        self.fp_per_classes = cm_fp.sum(1) - self.tp_per_classes
-        cm_fn = self.full_confusion_matrix[1:, 1:-1]
-        self.fn_per_classes = cm_fn.sum(0) - self.tp_per_classes
-
-        self.tp_model = self.tp_per_classes.sum()
-        self.fp_model = self.fp_per_classes.sum()
-        self.fn_model = self.fn_per_classes.sum()
-        self.tn_model = 0 
-
-        logging_info(f'TP / FN / FP / TN from confunsion matrix: ')
-        # for count in self.counts_per_class:
-        #     logging_info(f'count {count}')
-        
-        logging_info(f'self.tp_per_classes:{self.tp_per_classes}')
-        logging_info(f'self.tp_model:{self.tp_model}')
-        logging_info(f'self.fp_per_classes:{self.fp_per_classes}')
-        logging_info(f'self.fp_model:{self.fp_model}')
-        logging_info(f'self.fn_per_classes:{self.fn_per_classes}')
-        logging_info(f'self.fn_model:{self.fn_model}')
-        logging_info(f'self.tn_per_classes:{self.tn_per_classes}')
-        logging_info(f'self.tn_model:{self.tn_model}')
-
     def get_value_metric(self, metric):
         value = 0
         for count in self.counts_per_class:
@@ -530,11 +486,10 @@ class Metrics:
         # writing excel file from dataframe
         df.to_excel(path_and_filename, sheet_name='bounding_boxes', index=False)
 
-
     def compute_metrics_sklearn(self):
         logging_info(f'Computing metrics using Sklearn')
 
-        y_all_targets = []
+        all_targets = []
         all_preds = []
         for inferenced_image in self.inferenced_images:
             logging_info(f' inferenced_image: {inferenced_image}')

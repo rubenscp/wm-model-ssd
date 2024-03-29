@@ -50,7 +50,8 @@ from torchvision import transforms as torchtrans
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
-# Importing python modules
+# Importing python modules$2023#@
+
 from common.manage_log import *
 from common.tasks import Tasks
 from common.entity.AnnotationsStatistic import AnnotationsStatistic
@@ -112,8 +113,8 @@ def main():
     # creating log file 
     processing_tasks.start_task('Creating log file')
     logging_create_log(
-        parameters['inference_results']['log_folder'], 
-        parameters['inference_results']['log_filename']
+        parameters['test_results']['log_folder'], 
+        parameters['test_results']['log_filename']
     )
     processing_tasks.finish_task('Creating log file')
 
@@ -153,33 +154,32 @@ def main():
     model = get_neural_network_model(parameters, device)
     processing_tasks.finish_task('Creating neural network model')
 
-    # getting statistics of input dataset 
-    processing_tasks.start_task('Getting statistics of input dataset')
-    annotation_statistics = get_input_dataset_statistics(parameters)
-    show_input_dataset_statistics(annotation_statistics)
-    processing_tasks.finish_task('Getting statistics of input dataset')
+    # getting statistics of input dataset
+    if parameters['processing']['show_statistics_of_input_dataset']:
+        processing_tasks.start_task('Getting statistics of input dataset')
+        annotation_statistics = get_input_dataset_statistics(parameters)
+        show_input_dataset_statistics(parameters, annotation_statistics)
+        processing_tasks.finish_task('Getting statistics of input dataset')  
 
     # inference the neural netowrk model
     processing_tasks.start_task('Running inference of test images dataset')
     inference_neural_network_model(parameters, device, model)
-    # inference_neural_network_model_new_version(parameters, device, model, test_dataloader)
     processing_tasks.finish_task('Running inference of test images dataset')
 
     # showing input dataset statistics
-    show_input_dataset_statistics(annotation_statistics)
-
-    # printing metrics results 
-    
+    # show_input_dataset_statistics(parameters, annotation_statistics)
 
     # finishing model training 
     logging_info('')
-    logging_info('Finished the inference of the model SSD (Single Shot Detector)')
+    logging_info('Finished the test of the model SSD (Single Shot Detector)')
     logging_info('')
 
     # printing tasks summary 
     processing_tasks.finish_processing()
     logging_info(processing_tasks.to_string())
 
+    # copying processing files to log folder 
+    # copy_processing_files_to_log(parameters)
 
 # ###########################################
 # Methods of Level 2
@@ -259,74 +259,74 @@ def set_result_folders(parameters):
     # creating results folders 
     main_folder = os.path.join(
         parameters['processing']['research_root_folder'],     
-        parameters['inference_results']['main_folder']
+        parameters['test_results']['main_folder']
     )
-    parameters['inference_results']['main_folder'] = main_folder
+    parameters['test_results']['main_folder'] = main_folder
     Utils.create_directory(main_folder)
 
     # setting and creating model folder 
-    parameters['inference_results']['model_folder'] = parameters['neural_network_model']['model_name']
+    parameters['test_results']['model_folder'] = parameters['neural_network_model']['model_name']
     model_folder = os.path.join(
         main_folder,
-        parameters['inference_results']['model_folder']
+        parameters['test_results']['model_folder']
     )
-    parameters['inference_results']['model_folder'] = model_folder
+    parameters['test_results']['model_folder'] = model_folder
     Utils.create_directory(model_folder)
 
     # setting and creating action folder of training
     action_folder = os.path.join(
         model_folder,
-        parameters['inference_results']['action_folder']
+        parameters['test_results']['action_folder']
     )
-    parameters['inference_results']['action_folder'] = action_folder
+    parameters['test_results']['action_folder'] = action_folder
     Utils.create_directory(action_folder)
 
     # setting and creating running folder 
     running_id = parameters['processing']['running_id']
     running_id_text = 'running-' + f'{running_id:04}'
     input_image_size = str(parameters['input']['input_dataset']['input_image_size'])
-    parameters['inference_results']['running_folder'] = running_id_text + "-" + input_image_size + 'x' + input_image_size   
+    parameters['test_results']['running_folder'] = running_id_text + "-" + input_image_size + 'x' + input_image_size   
     running_folder = os.path.join(
         action_folder,
-        parameters['inference_results']['running_folder']
+        parameters['test_results']['running_folder']
     )
-    parameters['inference_results']['running_folder'] = running_folder
+    parameters['test_results']['running_folder'] = running_folder
     Utils.create_directory(running_folder)
 
     # setting and creating others specific folders
     processing_parameters_folder = os.path.join(
         running_folder,
-        parameters['inference_results']['processing_parameters_folder']
+        parameters['test_results']['processing_parameters_folder']
     )
-    parameters['inference_results']['processing_parameters_folder'] = processing_parameters_folder
+    parameters['test_results']['processing_parameters_folder'] = processing_parameters_folder
     Utils.create_directory(processing_parameters_folder)
 
     weights_folder = os.path.join(
         running_folder,
-        parameters['inference_results']['weights_folder']
+        parameters['test_results']['weights_folder']
     )
-    parameters['inference_results']['weights_folder'] = weights_folder
+    parameters['test_results']['weights_folder'] = weights_folder
     Utils.create_directory(weights_folder)
 
     metrics_folder = os.path.join(
         running_folder,
-        parameters['inference_results']['metrics_folder']
+        parameters['test_results']['metrics_folder']
     )
-    parameters['inference_results']['metrics_folder'] = metrics_folder
+    parameters['test_results']['metrics_folder'] = metrics_folder
     Utils.create_directory(metrics_folder)
 
     inferenced_image_folder = os.path.join(
         running_folder,
-        parameters['inference_results']['inferenced_image_folder']
+        parameters['test_results']['inferenced_image_folder']
     )
-    parameters['inference_results']['inferenced_image_folder'] = inferenced_image_folder
+    parameters['test_results']['inferenced_image_folder'] = inferenced_image_folder
     Utils.create_directory(inferenced_image_folder)
 
     log_folder = os.path.join(
         running_folder,
-        parameters['inference_results']['log_folder']
+        parameters['test_results']['log_folder']
     )
-    parameters['inference_results']['log_folder'] = log_folder
+    parameters['test_results']['log_folder'] = log_folder
     Utils.create_directory(log_folder)
 
 def get_device(parameters):
@@ -355,7 +355,7 @@ def save_processing_parameters(parameters_filename, parameters):
 
     # setting full path and log folder  to write parameters file 
     path_and_parameters_filename = os.path.join(
-        parameters['inference_results']['processing_parameters_folder'], 
+        parameters['test_results']['processing_parameters_folder'], 
         parameters_filename)
 
     # saving current processing parameters in the log folder 
@@ -376,7 +376,7 @@ def copy_weights_file(parameters):
     Utils.copy_file_same_name(
         parameters['input']['inference']['weights_filename'],
         parameters['input']['inference']['weights_folder'],
-        parameters['inference_results']['weights_folder']
+        parameters['test_results']['weights_folder']
     )
 
 def get_dataloaders(parameters):
@@ -439,35 +439,44 @@ def get_neural_network_model(parameters, device):
 def get_input_dataset_statistics(parameters):
     
     annotation_statistics = AnnotationsStatistic()
-    # datasets = ['test'] 
-    annotation_statistics.processing_statistics(parameters)
+    steps = ['test'] 
+    # steps = ['train', 'valid', 'test']
+    annotation_statistics.processing_statistics(parameters, steps)
     return annotation_statistics
     
-def show_input_dataset_statistics(annotation_statistics):
+def show_input_dataset_statistics(parameters, annotation_statistics):
 
     logging_info(f'Input dataset statistic')
     logging_info(annotation_statistics.to_string())
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'],
+        parameters['neural_network_model']['model_name'] + '_annotations_statistics.xlsx',
+    )
+    annotation_format = parameters['input']['input_dataset']['annotation_format']
+    input_image_size = parameters['input']['input_dataset']['input_image_size']
+    classes = (parameters['neural_network_model']['classes'])[1:5]
+    annotation_statistics.save_annotations_statistics(
+        path_and_filename,
+        annotation_format,
+        input_image_size,
+        classes
+    )
 
+def copy_processing_files_to_log(parameters):
+    input_path = os.path.join(
+        parameters['processing']['research_root_folder'],
+        parameters['processing']['project_name_folder'],
+    )
+    output_path = parameters['test_results']['log_folder']    
+    input_filename = output_filename = 'ssd_inference_errors'
+    # logging_info(f'input_filename: {input_filename}')
+    # logging_info(f'input_path: {input_path}')
+    # logging_info(f'output_filename: {output_filename}')
+    # logging_info(f'output_path: {output_path}')
+    Utils.copy_file(input_filename, input_path, output_filename, output_path)
 
-# def show_number_of_images_for_inference(parameters):
-
-#     logging_info(f'')
-#     logging_info(f'>> Show number of test images')
-
-#      # getting list of test images for inference 
-#     input_image_size = str(parameters['input']['input_dataset']['input_image_size'])
-#     test_image_dataset_folder = os.path.join(
-#         parameters['processing']['research_root_folder'],
-#         parameters['input']['input_dataset']['input_dataset_path'],
-#         parameters['input']['input_dataset']['annotation_format'],
-#         input_image_size + 'x' + input_image_size,
-#         'test'
-#     )
-
-#     test_images = glob.glob(f"{test_image_dataset_folder}/*.jpg")
-
-#     logging_info(f"Number of test images: {len(test_images)}")
-
+    input_filename = output_filename = 'ssd_inference_output'
+    Utils.copy_file(input_filename, input_path, output_filename, output_path)
 
 
 # ###########################################

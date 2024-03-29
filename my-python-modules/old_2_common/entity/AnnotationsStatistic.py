@@ -15,8 +15,6 @@ from common.utils import *
 from common.manage_log import * 
 from common.entity.ImageAnnotation import ImageAnnotation
 
-import pandas as pd
-
 # ###########################################
 # Constants
 # ###########################################
@@ -56,8 +54,6 @@ class AnnotationsStatistic:
                 image_dataset_folder_test,
                 steps
             )
-            # computing total percentage per step
-            self.compute_total_percentage(annotation_format, input_image_size)
 
         elif parameters['input']['input_dataset']['annotation_format'] == 'faster_rcnn':
             self.process_ssd_pascal_voc_format(
@@ -67,8 +63,6 @@ class AnnotationsStatistic:
                             image_dataset_folder_test,
                             steps
                         )
-            # computing total percentage per step
-            self.compute_total_percentage(annotation_format, input_image_size)
 
         elif parameters['input']['input_dataset']['annotation_format'] == 'yolov8':
             # setting specific folders of the image annotation labels 
@@ -83,8 +77,6 @@ class AnnotationsStatistic:
                             image_dataset_folder_test,
                             steps
                         )
-            # computing total percentage per step
-            self.compute_total_percentage(annotation_format, input_image_size)
 
 
     def initialize_statistics(self, annotation_format, input_image_size, classes):
@@ -210,20 +202,6 @@ class AnnotationsStatistic:
             )
 
 
-    def compute_total_percentage(self, annotation_format, input_image_size):
-        total_number_of_images = \
-            self.annotations_statistic[annotation_format][input_image_size]['train']['total']['number_of'] + \
-            self.annotations_statistic[annotation_format][input_image_size]['valid']['total']['number_of'] + \
-            self.annotations_statistic[annotation_format][input_image_size]['test']['total']['number_of'] 
-
-        self.annotations_statistic[annotation_format][input_image_size]['train']['total']['percentage'] = \
-            self.annotations_statistic[annotation_format][input_image_size]['train']['total']['number_of'] / total_number_of_images * 100
-        self.annotations_statistic[annotation_format][input_image_size]['valid']['total']['percentage'] = \
-            self.annotations_statistic[annotation_format][input_image_size]['valid']['total']['number_of'] / total_number_of_images * 100
-        self.annotations_statistic[annotation_format][input_image_size]['test']['total']['percentage'] = \
-            self.annotations_statistic[annotation_format][input_image_size]['test']['total']['number_of'] / total_number_of_images * 100
-
-
     # ###########################################
     # Methods of Level 2
     # ###########################################
@@ -294,8 +272,7 @@ class AnnotationsStatistic:
 
                 # getting all annotations of the image 
                 image_annotation = ImageAnnotation()
-                height = width = input_image_size
-                image_annotation.get_annotation_file_in_yolo_v5_format(path_and_filename_yolo_annotation, classes, height, width)
+                image_annotation.get_annotation_file_in_yolo_v5_format(path_and_filename_yolo_annotation, classes)
 
                 # processing bounding boxes 
                 for bounding_box in image_annotation.bounding_boxes:
@@ -312,46 +289,9 @@ class AnnotationsStatistic:
                     self.annotations_statistic[annotation_format][input_image_size][input_dataset_type] \
                                             [bounding_box.class_title]['percentage'] = new_percentage
 
-    def save_annotations_statistics(self, 
-                                    path_and_filename,
-                                    annotation_format, 
-                                    input_image_size, 
-                                    classes,
-        ):
 
-        # preparing columns name to list
-        column_names = [
-            'classes',
-            'training # images',            
-            'training percentage',
-            'validating # images',            
-            'validating percentage',
-            'testing # images',            
-            'testing percentage',
-        ]
 
-        list = []
-        classes.append('total')
-        for class_item  in classes:
-        # for annotation in self.annotations_statistic:
-            item = []
-            item.append(class_item)
-            item.append(self.annotations_statistic \
-                        [annotation_format][input_image_size]['train'][class_item]['number_of'])
-            item.append(self.annotations_statistic \
-                        [annotation_format][input_image_size]['train'][class_item]['percentage'])
-            item.append(self.annotations_statistic \
-                        [annotation_format][input_image_size]['valid'][class_item]['number_of'])
-            item.append(self.annotations_statistic \
-                        [annotation_format][input_image_size]['valid'][class_item]['percentage'])
-            item.append(self.annotations_statistic \
-                        [annotation_format][input_image_size]['test'][class_item]['number_of'])
-            item.append(self.annotations_statistic \
-                        [annotation_format][input_image_size]['test'][class_item]['percentage'])
-            list.append(item)                
 
-        # creating dataframe from list 
-        df = pd.DataFrame(list, columns=column_names)
 
-        # writing excel file from dataframe
-        df.to_excel(path_and_filename, sheet_name='statistics annotations', index=False)
+
+

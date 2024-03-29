@@ -4,7 +4,6 @@ pandas
 opencv-python
 torch
 torchmetrics
-torchmetrics[detection]
 torchvision
 albumentations
 pyarrow
@@ -12,3 +11,4 @@ tqdm
 lxml
 dict2xml
 seaborn
+openpyxl

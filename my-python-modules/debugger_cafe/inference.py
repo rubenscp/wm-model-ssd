@@ -17,6 +17,7 @@ from common.manage_log import *
 from common.utils import * 
 from common.entity.ImageAnnotation import ImageAnnotation
 from common.metrics import *
+from common.metricsTorchmetrics import *
 
 # ###########################################
 # Constants
@@ -44,7 +45,9 @@ def inference_neural_network_model(parameters, device, model):
     y_true = []
 
     # creating metric object 
+    # metricsTorchmetrics
     inference_metric = Metrics(model=parameters['neural_network_model']['model_name'])
+    metric_torchmetrics = MetricsTorchmetrics(model=parameters['neural_network_model']['model_name'], number_of_classes=5)
 
     # loading weights
     path_and_weights_filename = os.path.join(
@@ -80,12 +83,12 @@ def inference_neural_network_model(parameters, device, model):
     total_fps = 0 # To get the final frames per second.
 
     for i in range(len(test_images)):
-        # logging image name 
-        logging_info(f'')
-        logging_info(f'Processing image #{i+1} - {test_images[i]}')
         
         # extracting parts of path and image filename 
         path, filename_with_extension, filename, extension = Utils.get_filename(test_images[i])
+
+        # logging image name 
+        logging_info(f'Test image #{i+1} - {filename_with_extension}')
 
         # setting the annotation filename 
         path_and_filename_xml_annotation = os.path.join(path, filename + '.xml')
@@ -93,10 +96,12 @@ def inference_neural_network_model(parameters, device, model):
         # getting xml annotation of the image 
         image_annotation = ImageAnnotation()
         image_annotation.get_annotation_file_in_voc_pascal_format(path_and_filename_xml_annotation)
-        # print(f'inference - image_annotation: {image_annotation.to_string()} ')
+        # logging_info(f'inference - image_annotation: {image_annotation.to_string()} ')
         
         # getting target bounding boxes 
         target = image_annotation.get_tensor_target(classes)
+        # logging_info(f'target: {target}')
+
         # print(f'target 2 : {target}')
 
         # Get the image file name for saving output later on.
@@ -128,6 +133,13 @@ def inference_neural_network_model(parameters, device, model):
             outputs = model(image_input.to(device))
         end_time = time.time()
 
+        # logging_info(f'outputs: {outputs}')
+
+        # comentado por Rubens mas acho que é lixo 
+        # boxes = outputs[0]['boxes'].data.numpy()
+        # scores = outputs[0]['scores'].data.numpy()
+        # labels = outputs[0]['labels'].data.numpy()
+
         # NOTE: The bounding boxes selected in the "outputs" are ordered dicreasing by its scores
 
         # Get the current fps.
@@ -144,11 +156,30 @@ def inference_neural_network_model(parameters, device, model):
         # logging_info(f"len(outputs[0]['boxes']): {len(outputs[0]['boxes'])}")
         # logging_info(f"outputs[0]['boxes']: {outputs[0]['boxes']}")
 
+        # metricsTorchmetrics
+        # adding bounding boxes to MetricTorchmetrics object
+        targets_dict = dict()
+        preds_dict = dict()
+        targets_dict['boxes'] = torch.Tensor(target[0]['boxes'])
+        targets_dict['labels'] = torch.Tensor(target[0]['labels'])
+        metric_torchmetrics.add_targets(targets_dict)
+
         # Carry further only if there are detected boxes.
-        if len(outputs[0]['boxes']) != 0:
+        # logging_info(f"testing before outputs[0]['boxes']: {outputs[0]['boxes']}")
+        # logging_info(f"testing before outputs[0]['boxes']: {len(outputs[0]['boxes'])}")
+        # logging_info(f"testing before outputs: {outputs}")
+
+        if len(outputs[0]['boxes']) == 0:
+            # metricsTorchmetrics
+            preds_dict['boxes'] = torch.Tensor([])
+            preds_dict['scores'] = torch.Tensor([])
+            preds_dict['labels'] = torch.Tensor([])
+            metric_torchmetrics.add_preds(preds_dict)
+
+        else:
             boxes = outputs[0]['boxes'].data.numpy()
             scores = outputs[0]['scores'].data.numpy()
-            labels = outputs[0]['labels'].data.numpy()
+            labels = outputs[0]['labels'].data.numpy().astype(int)
 
             # print(f'outputs predicted: {outputs}')
             # print(f'boxes  : {len(boxes)}')
@@ -186,24 +217,43 @@ def inference_neural_network_model(parameters, device, model):
             # print(f'pred_classes : {pred_classes}')
             # print(f'')
             # print(f'outputs thresholded')
-            # print(f'boxes_thresholded : {boxes_thresholded}')
+            # logging_info(f'boxes_thresholded : {boxes_thresholded}')
             # print(f'scores_thresholded : {scores_thresholded}')
             # print(f'labels_thresholded : {labels_thresholded}')
             
             # getting predicted bounding boxes 
-            predicted = inference_metric.get_predicted_bounding_boxes(
+            predicteds = inference_metric.get_predicted_bounding_boxes(
                                         boxes_thresholded,
                                         scores_thresholded,
                                         labels_thresholded)
 
             # print(f'--------------------------------------------------')
             # print(f'target   : {target}')
-            # print(f'predicted: {predicted}')
+            # print(f'predicteds: {predicteds}')
             # print(f'--------------------------------------------------')
 
-            # setting target and predicted bounding boxes for metrics 
-            inference_metric.target.extend(target)
-            inference_metric.preds.extend(predicted)
+            # setting target and predicteds bounding boxes for metrics            
+            inference_metric.set_details_of_inferenced_image(
+                filename_with_extension, target, predicteds)
+
+            # metricsTorchmetrics
+            # adding predicted bounding boxes to metric torchmetric object  
+            # logging_info(f'boxes_thresholded: {boxes_thresholded}')
+            # logging_info(f'torch.Tensor(boxes_thresholded): {torch.Tensor(boxes_thresholded)}')
+            if len(boxes_thresholded) > 0:
+                preds_dict['boxes'] = torch.Tensor(boxes_thresholded)
+                preds_dict['scores'] = torch.Tensor(scores_thresholded)
+                preds_dict['labels'] = torch.Tensor(labels_thresholded).int()
+            else: 
+                preds_dict['boxes'] = None 
+                preds_dict['scores'] = None 
+                preds_dict['labels'] = None 
+                
+            # logging_info(f'adding preds - preds_dict: {preds_dict}')
+            metric_torchmetrics.add_preds(preds_dict)
+
+            # inference_metric.target.extend(target)
+            # inference_metric.preds.extend(predicteds)
             # print(f'inference_metric.to_string: {inference_metric.to_string()}')
 
             # calculating IoU metric 
@@ -213,7 +263,6 @@ def inference_neural_network_model(parameters, device, model):
 
             # num_labels = 4
             # resul_confusion_matrix = inference_metric.compute_confusion_matrix_111(num_labels)
-
             
             # result2 = inference_metric.calculate_box_iou(class_metrics_indicator=True)
             # print(f'inference result: {result}')
@@ -257,7 +306,7 @@ def inference_neural_network_model(parameters, device, model):
             # cv2.imshow('Prediction', orig_image)
             cv2.waitKey(1)
             inferenced_image_folder = os.path.join(
-                parameters['inference_results']['inferenced_image_folder']
+                parameters['test_results']['inferenced_image_folder']
             )
             cv2.imwrite(f"{inferenced_image_folder}/{image_name}_predicted.jpg", orig_image)
 
@@ -267,16 +316,42 @@ def inference_neural_network_model(parameters, device, model):
     # logging_info('TEST PREDICTIONS COMPLETE')
     # cv2.destroyAllWindows()
 
+    # ----------------------------------------------------------
+    # Computing metrics using TorchMetrics 
+    # metricsTorchmetrics
+    # metric_torchmetrics.compute_confusion_matrix()
+    # metric_torchmetrics.compute_mean_average_precision()
+    # metric_torchmetrics.compute_precision()  
+    # ----------------------------------------------------------
+
+    # ----------------------------------------------------------
+    # Computing metrics using Sklearn 
+    # 
+    # inference_metric.compute_metrics_sklearn()
+    # exit()
+    
+    # ----------------------------------------------------------
+
     # Computing Confusion Matrix 
+    model_name = parameters['neural_network_model']['model_name']
     num_classes = 5
+    threshold = parameters['neural_network_model']['threshold']
     iou_threshold = parameters['neural_network_model']['iou_threshold']
-    inference_metric.compute_confusion_matrix(num_classes, iou_threshold)
+    metrics_folder = parameters['test_results']['metrics_folder']
+    inference_metric.compute_confusion_matrix(model_name, num_classes, threshold, iou_threshold, metrics_folder)
     inference_metric.confusion_matrix_to_string()
 
-    # saving confusion matrix plots 
-    title = 'Full Confusion Matrix'
-    path_and_filename = os.path.join(parameters['inference_results']['metrics_folder'], 
-        'confusion_matrix_full_' + parameters['neural_network_model']['model_name'] + '.png'
+    # saving confusion matrix plots
+    title =  'Full Confusion Matrix' + \
+             ' - Model: ' + parameters['neural_network_model']['model_name'] + \
+             '   # images:' + str(inference_metric.confusion_matrix_summary['number_of_images'])
+    title += LINE_FEED + '  # bounding box -' + \
+             ' predicted with target: ' + str(inference_metric.confusion_matrix_summary['number_of_bounding_boxes_predicted_with_target']) + \
+             '   ghost predictions: ' + str(inference_metric.confusion_matrix_summary['number_of_ghost_predictions']) + \
+             '   undetected objects: ' + str(inference_metric.confusion_matrix_summary['number_of_undetected_objects'])
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'], 
+        parameters['neural_network_model']['model_name'] + '_confusion_matrix_full.png'
     )
     cm_classes = classes[0:5]
     x_labels_names = cm_classes.copy()
@@ -287,10 +362,18 @@ def inference_neural_network_model(parameters, device, model):
     Utils.save_plot_confusion_matrix(inference_metric.full_confusion_matrix, 
                                      path_and_filename, title, format,
                                      x_labels_names, y_labels_names)
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'], 
+        parameters['neural_network_model']['model_name'] + '_confusion_matrix_full.xlsx'
+    )
+    Utils.save_confusion_matrix_excel(inference_metric.full_confusion_matrix,
+                                      path_and_filename, 
+                                      x_labels_names, y_labels_names)                                    
         
     title = 'Confusion Matrix'
-    path_and_filename = os.path.join(parameters['inference_results']['metrics_folder'], 
-        'confusion_matrix_' + parameters['neural_network_model']['model_name'] + '.png'
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'], 
+        parameters['neural_network_model']['model_name'] + '_confusion_matrix.png'
     )
     cm_classes = classes[1:5]
     x_labels_names = cm_classes.copy()
@@ -299,26 +382,150 @@ def inference_neural_network_model(parameters, device, model):
     Utils.save_plot_confusion_matrix(inference_metric.confusion_matrix, 
                                      path_and_filename, title, format,
                                      x_labels_names, y_labels_names)
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'], 
+        parameters['neural_network_model']['model_name'] + '_confusion_matrix.xlsx'
+    )
+    Utils.save_confusion_matrix_excel(inference_metric.confusion_matrix,
+                                      path_and_filename,
+                                      x_labels_names, y_labels_names)                      
 
+    title =  'Full Confusion Matrix Normalized' + \
+             ' - Model: ' + parameters['neural_network_model']['model_name'] + \
+             '   # images:' + str(inference_metric.confusion_matrix_summary['number_of_images'])
+    title += LINE_FEED + '  # bounding box -' + \
+             ' predicted with target: ' + str(inference_metric.confusion_matrix_summary['number_of_bounding_boxes_predicted_with_target']) + \
+             '   ghost predictions: ' + str(inference_metric.confusion_matrix_summary['number_of_ghost_predictions']) + \
+             '   undetected objects: ' + str(inference_metric.confusion_matrix_summary['number_of_undetected_objects'])
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'], 
+        parameters['neural_network_model']['model_name'] + '_confusion_matrix_full_normalized.png'
+    )
+    cm_classes = classes[0:5]
+    x_labels_names = cm_classes.copy()
+    y_labels_names = cm_classes.copy()
+    x_labels_names.append('Ghost predictions')    
+    y_labels_names.append('Undetected objects')
+    format='.2f'
+    Utils.save_plot_confusion_matrix(inference_metric.full_confusion_matrix_normalized, 
+                                     path_and_filename, title, format,
+                                     x_labels_names, y_labels_names)
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'], 
+        parameters['neural_network_model']['model_name'] + '_confusion_matrix_full_normalized.xlsx'
+    )
+    Utils.save_confusion_matrix_excel(inference_metric.full_confusion_matrix_normalized,
+                                      path_and_filename,
+                                      x_labels_names, y_labels_names)                      
+
+    title =  'Confusion Matrix Normalized' + \
+             ' - Model: ' + parameters['neural_network_model']['model_name'] + \
+             '   # images:' + str(inference_metric.confusion_matrix_summary['number_of_images'])
+    title += LINE_FEED + '  # bounding box -' + \
+             ' predicted with target: ' + str(inference_metric.confusion_matrix_summary['number_of_bounding_boxes_predicted_with_target']) + \
+             '   ghost predictions: ' + str(inference_metric.confusion_matrix_summary['number_of_ghost_predictions']) + \
+             '   undetected objects: ' + str(inference_metric.confusion_matrix_summary['number_of_undetected_objects'])
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'], 
+        parameters['neural_network_model']['model_name'] + '_confusion_matrix_normalized.png'
+    )
+    cm_classes = classes[1:5]
+    x_labels_names = cm_classes.copy()
+    y_labels_names = cm_classes.copy()
+    format='.2f'
+    Utils.save_plot_confusion_matrix(inference_metric.confusion_matrix_normalized, 
+                                     path_and_filename, title, format,
+                                     x_labels_names, y_labels_names)
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'], 
+        parameters['neural_network_model']['model_name'] + '_confusion_matrix_normalized.xlsx'
+    )
+    Utils.save_confusion_matrix_excel(inference_metric.confusion_matrix_normalized,
+                                      path_and_filename,
+                                      x_labels_names, y_labels_names)
+
+    # saving metrics from confusion matrix
+    path_and_filename = os.path.join(
+        parameters['test_results']['metrics_folder'],
+        parameters['neural_network_model']['model_name'] + '_confusion_matrix_metrics.xlsx'
+    )
+    
+    # Utils.save_metrics_from_confusion_matrix_excel(
+    #     path_and_filename, 
+    #     parameters['neural_network_model']['model_name'],
+    #     inference_metric.get_model_accuracy(),
+    #     inference_metric.get_model_precision(),
+    #     inference_metric.get_model_recall(),
+    #     inference_metric.get_model_f1_score(),
+    #     inference_metric.get_model_specificity(),
+    #     inference_metric.get_model_dice(),
+    #     inference_metric.confusion_matrix_summary["number_of_images"],
+    #     inference_metric.confusion_matrix_summary["number_of_bounding_boxes_target"],
+    #     inference_metric.confusion_matrix_summary["number_of_bounding_boxes_predicted"],
+    #     inference_metric.confusion_matrix_summary["number_of_bounding_boxes_predicted_with_target"],
+    #     inference_metric.confusion_matrix_summary["number_of_ghost_predictions"],
+    #     inference_metric.confusion_matrix_summary["number_of_undetected_objects"], 
+    # )
+
+    sheet_name='summary_metrics'
+    sheet_list = []
+    sheet_list.append(['Metrics Results calculated by application', ''])
+    sheet_list.append(['', ''])
+    sheet_list.append(['Model', f'{ parameters["neural_network_model"]["model_name"]}'])
+    sheet_list.append(['', ''])
+
+    # computing TP, FP, FN and TN from confusion matrix 
+    sheet_list.append(['TP / FP / FN / TN', ''])
+    sheet_list.append(['TP per classes', inference_metric.tp_per_classes])
+    sheet_list.append(['FP per classes', inference_metric.fp_per_classes])
+    sheet_list.append(['FN per classes', inference_metric.fn_per_classes])
+    sheet_list.append(['TN per classes', inference_metric.tn_per_classes])
+    sheet_list.append(['', ''])
+    sheet_list.append(['TP', inference_metric.tp_model])
+    sheet_list.append(['FP', inference_metric.fp_model])
+    sheet_list.append(['FN', inference_metric.fn_model])
+    sheet_list.append(['TN', inference_metric.tn_model])
+    sheet_list.append(['', ''])
+
+    # metric measures 
+    sheet_list.append(['Metric measures', ''])
+    # sheet_list.append(['Accuracy', f'{inference_metric.get_model_accuracy():.8f}'])
+    sheet_list.append(['Precision', f'{inference_metric.get_model_precision():.8f}'])
+    sheet_list.append(['Recall', f'{inference_metric.get_model_recall():.8f}'])
+    sheet_list.append(['F1-score', f'{inference_metric.get_model_f1_score():.8f}'])
+    sheet_list.append(['Dice', f'{inference_metric.get_model_dice():.8f}'])
+    sheet_list.append(['', ''])
+    # sheet_list.append(['inference_metric.confusion_matrix_summary', inference_metric.confusion_matrix_summary])
+    sheet_list.append(['number_of_images', f'{inference_metric.confusion_matrix_summary["number_of_images"]:.0f}'])
+    sheet_list.append(['number_of_bounding_boxes_target', f'{inference_metric.confusion_matrix_summary["number_of_bounding_boxes_target"]:.0f}'])
+    sheet_list.append(['number_of_bounding_boxes_predicted', f'{inference_metric.confusion_matrix_summary["number_of_bounding_boxes_predicted"]:.0f}'])
+    sheet_list.append(['number_of_bounding_boxes_predicted_with_target', f'{inference_metric.confusion_matrix_summary["number_of_bounding_boxes_predicted_with_target"]:.0f}'])
+    sheet_list.append(['number_of_ghost_predictions', f'{inference_metric.confusion_matrix_summary["number_of_ghost_predictions"]:.0f}'])
+    sheet_list.append(['number_of_undetected_objects', f'{inference_metric.confusion_matrix_summary["number_of_undetected_objects"]:.0f}'])
+
+    # saving metrics sheet
+    Utils.save_metrics_excel(path_and_filename, sheet_name, sheet_list)
+    logging_sheet(sheet_list)
+       
     # get performance metrics 
-    logging_info(f'')
-    logging_info(f'Performance Metrics')
-    logging_info(f'-------------------')
-    model_accuracy = inference_metric.get_model_accuracy()
-    logging_info(f'accuracy    : {model_accuracy:.4f}')
-    model_precision = inference_metric.get_model_precision()
-    logging_info(f'precision   : {model_precision:.4f}')
-    model_recall = inference_metric.get_model_recall()
-    logging_info(f'recall      : {model_recall:.4f}')
-    model_f1_score = inference_metric.get_model_f1_score()
-    logging_info(f'f1-score    : {model_f1_score:.4f}')
-    model_specificity = inference_metric.get_model_specificity()
-    logging_info(f'specificity : {model_specificity:.4f}')
-    model_dice = inference_metric.get_model_dice()
-    logging_info(f'dice        : {model_dice:.4f}')
-    logging_info(f'')
+    # logging_info(f'')    
+    # logging_info(f"Performance Metrics of model {parameters['neural_network_model']['model_name']}")
+    # logging_info(f'')
+    # model_accuracy = inference_metric.get_model_accuracy()
+    # logging_info(f'accuracy    : {model_accuracy:.4f}')
+    # model_precision = inference_metric.get_model_precision()
+    # logging_info(f'precision   : {model_precision:.4f}')
+    # model_recall = inference_metric.get_model_recall()
+    # logging_info(f'recall      : {model_recall:.4f}')
+    # model_f1_score = inference_metric.get_model_f1_score()
+    # logging_info(f'f1-score    : {model_f1_score:.4f}')
+    # model_specificity = inference_metric.get_model_specificity()
+    # logging_info(f'specificity : {model_specificity:.4f}')
+    # model_dice = inference_metric.get_model_dice()
+    # logging_info(f'dice        : {model_dice:.4f}')
+    # logging_info(f'')
 
-    # path_and_filename = os.path.join(parameters['inference_results']['metrics_folder'], 
+    # path_and_filename = os.path.join(parameters['test_results']['metrics_folder'], 
     #                         'confusion_matrix_ssd_normalized.png')
     # cm_classes = classes[1:5]
     # title = 'Confusion Matrix Normalized'

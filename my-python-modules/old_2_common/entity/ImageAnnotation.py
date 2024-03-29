@@ -10,7 +10,6 @@ import torch
 
 from common.entity.BoundingBox import BoundingBox
 from common.utils import Utils
-from common.manage_log import * 
 
 # ###########################################
 # Constants
@@ -296,8 +295,7 @@ class ImageAnnotation:
                 self.bounding_boxes.append(bounding_box)
 
 
-    def get_annotation_file_in_yolo_v5_format(self, path_and_filename_yolo_annotation, 
-        classes, image_height, image_width):
+    def get_annotation_file_in_yolo_v5_format(self, path_and_filename_yolo_annotation, classes):
 
         # reading text file 
         data_into_list = Utils.read_text_file(path_and_filename_yolo_annotation)
@@ -305,26 +303,13 @@ class ImageAnnotation:
         # splitting list into bounding box fields
         bounding_boxes = [data.split(' ') for data in data_into_list]
 
-        # logging_info(f'path_and_filename_yolo_annotation: {path_and_filename_yolo_annotation}')
-        # logging_info(f'bounding_boxes: {bounding_boxes}')
-
-        # setting image dimensions 
-        self.height = image_height
-        self.width = image_width
-
         # converting types of the string values 
         for bounding_box in bounding_boxes:
             id_class = int(bounding_box[0])
-            bbox_center_x_col = float(bounding_box[1]) * self.width
-            bbox_center_y_lin = float(bounding_box[2]) * self.height
-            bbox_width        = float(bounding_box[3]) * self.width
-            bbox_height       = float(bounding_box[4]) * self.height
-
-            # logging_info(f'bounding_box: {bounding_box}')
-            # logging_info(f'bbox_center_x_col: {bbox_center_x_col}')
-            # logging_info(f'bbox_center_y_lin: {bbox_center_y_lin}')
-            # logging_info(f'bbox_width: {bbox_width}')
-            # logging_info(f'bbox_height: {bbox_height}')
+            # bounding_box[1] = float(bounding_box[1])
+            # bounding_box[2] = float(bounding_box[2])
+            # bounding_box[3] = float(bounding_box[3])
+            # bounding_box[4] = float(bounding_box[4])
 
             # creating new bounding box object 
             bounding_box = BoundingBox()
@@ -333,16 +318,15 @@ class ImageAnnotation:
             # bounding_box.id = object["id"]
             # bounding_box.class_id = 
             bounding_box.class_title = classes[id_class]
-            
-            # computing coordinates of point 1 and 2 of the bounding box 
-            bounding_box.col_point1 = bbox_center_x_col - (bbox_width / 2.0)
-            bounding_box.lin_point1 = bbox_center_y_lin - (bbox_height / 2.0)
-            bounding_box.col_point2 = bbox_center_x_col + (bbox_width / 2.0)
-            bounding_box.lin_point2 = bbox_center_y_lin + (bbox_height / 2.0)
+            # bounding_box.lin_point1 = object["points"]["exterior"][0][1]
+            # bounding_box.col_point1 = object["points"]["exterior"][0][0]
+            # bounding_box.lin_point2 = object["points"]["exterior"][1][1]
+            # bounding_box.col_point2 = object["points"]["exterior"][1][0]
 
             # adding bouding box to list 
             self.bounding_boxes.append(bounding_box)
             
+
     def get_tensor_target(self, classes):
 
         # creating target object 

@@ -45,11 +45,4 @@ def get_datetime():
     now = datetime.now()
     date_time_text = now.strftime('%Y/%m/%d %H:%M:%S')
     return date_time_text
-
-def logging_sheet(sheet_list):
-    logging_info(f'')
-    for item in sheet_list:
-        logging_info(f'{item}')    
-        continue
-    logging_info(f'')
-     
+    
