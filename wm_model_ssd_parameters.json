@@ -3,23 +3,41 @@
         "input_dataset": {
             "input_image_size": 300,
             "annotation_format": "ssd_pascal_voc",
-            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0003-15ds-300x300/splitting_by_images/2-output-dataset"
+            "comment 11111 input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0003-15ds-300x300/splitting_by_images/2-output-dataset",
+            "comment 33333 input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0001-01ds-300x300/splitting_by_images/2-output-dataset",
+            "comment unbalance input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0013-15ds-300x300-balanced-classes/splitting_by_images/2-output-dataset",
+            "comment balance input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0013-15ds-300x300-balanced-classes/splitting_by_images/4-balanced-output-dataset",
+            "comment two classes input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0014-15ds-300x300-just-two-classes/splitting_by_images/4-balanced-output-dataset",
+            "comment three classes input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0015-15ds-300x300-three-classes/splitting_by_images/4-balanced-output-dataset",
+            "commment merged classes input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0021-15ds-300x300-merged-classes/splitting_by_images/4-balanced-output-dataset",
+            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0013-15ds-300x300-balanced-classes/splitting_by_images/4-balanced-output-dataset"            
+        },
+        "experiment": {
+            "id": "image-dataset-per-class",
+            "description": "006 - Merging \"Imature sclerotium\" and \"White Mold\" creating a new image dataset with three classe: apothecium, mature scledotium and the merged class."
         },
         "inference": {
-            "weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights/training-300x300-with-100-epochs",
-            "weights_filename": "ssd300_vgg16-running-0065-300x300-best_model.pth"
+            "comment unbalanced weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights/2024-04-training-300x300-unbalanced-image-with-200-epochs",
+            "comment unbalanced weights_filename": "ssd300_vgg16-running-0427-300x300-best_model.pth",
+            "comment balanced weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights/exp-005-training-300x300-balanced-image-with-200-epochs-three-classes",
+            "comment balanced weights_filename": "ssd300_vgg16-running-0621-300x300-best_model.pth",
+            "weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights/exp-006-training-300x300-merging-classes-balanced-image-all-classes",
+            "weights_filename": "ssd300_vgg16-running-0631-300x300-best_model.pth"
         }    
     },
     "neural_network_model": {
         "model_name": "ssd300_vgg16",
-        "number_epochs": 100,
+        "number_epochs": 200,
         "batch_size": 128,
         "resize_of_input_image": 300,
         "threshold": 0.4,
-        "iou_threshold": 0.5,
+        "iou_threshold": 0.3,
+        "non_maximum_suppression": 0.7,
         "number_workers": 2,
+        "number_of_classes": 5,
         "classes": [
-            "__background__", "Apothecium", "Imature Sclerotium", "Mature Sclerotium", "White Mold", "class 5", "class 6", "class 7", "class 8", "class 9", "class 10",
+            "__background__", "Apothecium", "Imature Sclerotium", "Mature Sclerotium", "White Mold", "Imature Sclerotium and White Mold", 
+            "class 6", "class 7", "class 8", "class 9", "class 10",
             "class 11", "class 12", "class 13", "class 14", "class 15", "class 16", "class 17", "class 18", "class 19", "class 20",
             "class 21", "class 22", "class 23", "class 24", "class 25", "class 26", "class 27", "class 28", "class 29", "class 30",
             "class 31", "class 32", "class 33", "class 34", "class 35", "class 36", "class 37", "class 38", "class 39", "class 40",
@@ -29,7 +47,6 @@
             "class 71", "class 72", "class 73", "class 74", "class 75", "class 76", "class 77", "class 78", "class 79", "class 80",
             "class 81", "class 82", "class 83", "class 84", "class 85", "class 86", "class 87", "class 88", "class 89", "class 90"         
         ],
-        "non_maximum_suppression": 0.45,
         "is_pre_trained_weights": true,
         "learning_rate": 0.0005,
         "gamma": 0.1,
@@ -40,15 +57,17 @@
         "project_name_folder": "white-mold-applications/wm-model-ssd",
         "running_control_filename": "running_control.json",
         "running_id": "defined during training/inference ",
+        "running_id_text": "defined during training/inference ",
         "image_dataset_folder": "defined during training/inference ",
         "image_dataset_folder_train": "defined during training/inference ",
         "image_dataset_folder_valid": "defined during training/inference ",
         "image_dataset_folder_test": "defined during training/inference ",
-        "show_statistics_of_input_dataset": false
+        "show_statistics_of_input_dataset": true
     },
     "training_results": {
         "main_folder": "white-mold-results",        
         "model_folder": "defined during training/inference",
+        "experiment_folder": "experiment",
         "action_folder": "training",
         "running_folder": "defined during training/inference",
         "processing_parameters_folder": "processing-parameters",
@@ -61,6 +80,7 @@
     "test_results": {
         "main_folder": "white-mold-results",        
         "model_folder": "defined during training/test",
+        "experiment_folder": "experiment",
         "action_folder": "test",
         "running_folder": "defined during training/test",
         "processing_parameters_folder": "processing-parameters",
@@ -69,5 +89,8 @@
         "inferenced_image_folder": "tested-image",
         "log_folder": "log",
         "log_filename": "wm-model-ssd-test"
+    },
+    "organize_images_dataset_per_class": {
+        "active": true
     }
 }

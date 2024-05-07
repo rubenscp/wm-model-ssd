@@ -45,12 +45,14 @@ class BoundingBox:
             return 3
         elif self.class_title == 'White Mold':
             return 4
-        elif self.class_title == 'Mushroom':
+        elif self.class_title == 'Imature Sclerotium and White Mold':
             return 5
-        elif self.class_title == 'Petal':
+        elif self.class_title == 'Mushroom':
             return 6
-        elif self.class_title == 'Coal':
+        elif self.class_title == 'Petal':
             return 7
+        elif self.class_title == 'Coal':
+            return 8
         else:
             return -1       
 

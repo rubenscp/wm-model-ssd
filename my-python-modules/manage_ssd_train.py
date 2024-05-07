@@ -243,6 +243,7 @@ def get_running_id(parameters):
 
     # updating running id in the processing parameters 
     parameters['processing']['running_id'] = running_id
+    parameters['processing']['running_id_text'] = 'running-' + f'{running_id:04}'
 
     # returning running id 
     return running_id
@@ -251,6 +252,9 @@ def set_result_folders(parameters):
     '''
     Set folder name of output results
     '''
+
+    # resetting test results 
+    parameters['test_results'] = {}
 
     # creating results folders 
     main_folder = os.path.join(
@@ -269,9 +273,17 @@ def set_result_folders(parameters):
     parameters['training_results']['model_folder'] = model_folder
     Utils.create_directory(model_folder)
 
+    # setting and creating experiment folder
+    experiment_folder = os.path.join(
+        model_folder,
+        parameters['input']['experiment']['id']
+    )
+    parameters['training_results']['experiment_folder'] = experiment_folder
+    Utils.create_directory(experiment_folder)
+
     # setting and creating action folder of training
     action_folder = os.path.join(
-        model_folder,
+        experiment_folder,
         parameters['training_results']['action_folder']
     )
     parameters['training_results']['action_folder'] = action_folder
@@ -446,7 +458,8 @@ def show_input_dataset_statistics(parameters, annotation_statistics):
     logging_info(annotation_statistics.to_string())
     path_and_filename = os.path.join(
         parameters['training_results']['metrics_folder'],
-        parameters['neural_network_model']['model_name'] + '_annotations_statistics.xlsx',
+        parameters['neural_network_model']['model_name'] + \
+        '_' + parameters['processing']['running_id_text'] + '_annotations_statistics.xlsx',
     )
     annotation_format = parameters['input']['input_dataset']['annotation_format']
     input_image_size = parameters['input']['input_dataset']['input_image_size']

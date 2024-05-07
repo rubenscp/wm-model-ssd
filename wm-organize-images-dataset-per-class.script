@@ -1,0 +1,9 @@
+#PBS -N ssd_org_images
+#PBS -q serial
+#PBS -e ssd_organize_images_errors 
+#PBS -o ssd_organize_images_output
+#PBS -m abe
+
+source ~/research/white-mold-applications/wm-model-ssd/venv-wm-model-ssd/bin/activate
+module load cuda/11.5.0-intel-2022.0.1
+python ~/research/white-mold-applications/wm-model-ssd/my-python-modules/organize_images_per_class.py

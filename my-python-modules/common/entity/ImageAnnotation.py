@@ -19,7 +19,8 @@ LINE_FEED = '\n'
 
 class ImageAnnotation:
     def __init__(self, image_name='', image_name_with_extension='', annotation_name = '', 
-                 height=None, width=None, deep=None, original_image_folder='', bounding_boxes=None):
+                 height=None, width=None, deep=None, original_image_folder='', 
+                 bounding_boxes=None):
         self.image_name = image_name
         self.image_name_with_extension = image_name_with_extension
         self.annotation_name = annotation_name
@@ -27,10 +28,13 @@ class ImageAnnotation:
         self.width = width
         self.deep = deep
         self.original_image_folder = ''
+
         self.bounding_boxes = [] if bounding_boxes == None else bounding_boxes
 
     def to_string(self):
         text = 'Image: ' + self.image_name + \
+               ' image_name_with_extension: ' + self.image_name_with_extension + \
+               ' annotation_name: ' + self.annotation_name + \
                ' height: ' + str(self.height) + \
                ' width: ' + str(self.width) + \
                ' bounding boxes: ' + str(len(self.bounding_boxes)) + \
@@ -43,14 +47,14 @@ class ImageAnnotation:
 
     def set_annotation_fields_in_supervisely_format(self, image_name, image_name_with_extension,
                                                     annotation_name, annotation_json,
-                                                    selected_classes, original_image_folder):
+                                                    selected_classes, original_image_folder, 
+                                                    ):
         self.image_name = image_name
         self.image_name_with_extension = image_name_with_extension
         self.annotation_name = annotation_name
         self.height = annotation_json["size"]["height"]
         self.width = annotation_json["size"]["width"]
         self.original_image_folder = original_image_folder
-
         self.bounding_boxes = []
 
         for object in annotation_json["objects"]:
@@ -75,7 +79,12 @@ class ImageAnnotation:
                 # adding bounding box to list 
                 self.bounding_boxes.append(bounding_box)
             
-    def set_annotation_of_cropped_image(self, image_name, image_name_with_extension, annotation_name, height, width, original_bounding_box):
+    def set_annotation_of_cropped_image(self, 
+        image_name, 
+        image_name_with_extension, 
+        annotation_name, 
+        height, width, 
+        original_bounding_box):
 
         self.image_name = image_name
         self.image_name_with_extension = image_name_with_extension
@@ -365,3 +374,13 @@ class ImageAnnotation:
 
         # returning target object
         return target 
+
+
+    # merge class labels to one class
+    def merge_classes_in_bounding_boxes(self, origin_classes, target_class, target_class_id):      
+        for bounding_box in self.bounding_boxes:
+            if bounding_box.class_title in origin_classes:
+                bounding_box.class_title = target_class
+                bounding_box.class_id = target_class_id
+
+

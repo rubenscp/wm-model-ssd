@@ -40,6 +40,9 @@ class AnnotationsStatistic:
         image_dataset_folder_train = parameters['processing']['image_dataset_folder_train']
         image_dataset_folder_valid = parameters['processing']['image_dataset_folder_valid']
         image_dataset_folder_test  = parameters['processing']['image_dataset_folder_test']
+
+        organize_images_dataset_per_class = parameters['organize_images_dataset_per_class']['active']
+        image_output_folder = parameters['test_results']['inferenced_image_folder']
         
         # initilizing statistics
         self.initialize_statistics(annotation_format, input_image_size, classes)
@@ -54,7 +57,9 @@ class AnnotationsStatistic:
                 image_dataset_folder_train,
                 image_dataset_folder_valid, 
                 image_dataset_folder_test,
-                steps
+                steps,
+                organize_images_dataset_per_class,
+                image_output_folder,
             )
             # computing total percentage per step
             self.compute_total_percentage(annotation_format, input_image_size)
@@ -65,7 +70,9 @@ class AnnotationsStatistic:
                             image_dataset_folder_train,
                             image_dataset_folder_valid, 
                             image_dataset_folder_test,
-                            steps
+                            steps,
+                            organize_images_dataset_per_class,
+                            image_output_folder,
                         )
             # computing total percentage per step
             self.compute_total_percentage(annotation_format, input_image_size)
@@ -136,7 +143,9 @@ class AnnotationsStatistic:
         image_dataset_folder_train, 
         image_dataset_folder_valid, 
         image_dataset_folder_test, 
-        steps
+        steps,
+        organize_images_dataset_per_class, 
+        image_output_folder,
     ):
 
         # get annotations list 
@@ -147,7 +156,8 @@ class AnnotationsStatistic:
             input_dataset_type = 'train'
             self.process_image_annotations_xml(
                 annotation_format, input_image_size, input_dataset_type, classes, 
-                image_dataset_folder_train, train_annotations_list
+                image_dataset_folder_train, train_annotations_list, 
+                organize_images_dataset_per_class, image_output_folder,
             )
 
         if 'valid' in steps:
@@ -157,7 +167,8 @@ class AnnotationsStatistic:
             input_dataset_type = 'valid'
             self.process_image_annotations_xml(
                 annotation_format, input_image_size, input_dataset_type, classes, 
-                image_dataset_folder_valid, valid_annotations_list
+                image_dataset_folder_valid, valid_annotations_list,
+                organize_images_dataset_per_class, image_output_folder,
             )
 
         if 'test' in steps:
@@ -167,7 +178,8 @@ class AnnotationsStatistic:
             input_dataset_type = 'test'
             self.process_image_annotations_xml(
                 annotation_format, input_image_size, input_dataset_type, classes, 
-                image_dataset_folder_test, test_annotations_list
+                image_dataset_folder_test, test_annotations_list,
+                organize_images_dataset_per_class, image_output_folder,                
             )
 
     def process_yolov8_format(self,
@@ -235,10 +247,13 @@ class AnnotationsStatistic:
         classes,
         image_dataset_folder,
         annotations_list,
+        organize_images_dataset_per_class,
+        image_output_folder,        
     ):
 
         # logging process
         logging_info(f'Processing image dataset of {input_dataset_type} with {len(annotations_list)} images')
+        logging_info('')
 
         # setting total 
         self.annotations_statistic[annotation_format][input_image_size][input_dataset_type] \
@@ -269,6 +284,24 @@ class AnnotationsStatistic:
                 self.annotations_statistic[annotation_format][input_image_size][input_dataset_type] \
                                           [bounding_box.class_title]['percentage'] = new_percentage
 
+                # copying image to class folder
+                if organize_images_dataset_per_class:
+                    logging_info(f'{input_dataset_type} -' \
+                                 f' copying image {image_annotation.image_name}' \
+                                 f' annotation_file: {annotation_file}' \
+                                 f' class: {bounding_box.class_title}'
+                                )
+                    filename, extension = Utils.get_filename_and_extension(annotation_file)
+                    filename += '.jpg'
+                    input_path = image_dataset_folder
+                    output_path = os.path.join(image_output_folder, input_dataset_type, bounding_box.class_title)
+                    Utils.create_directory(output_path)
+
+                    # logging_info(f'organize_images_dataset_per_class: {organize_images_dataset_per_class}')
+                    # logging_info(f'filename: {filename}')
+                    # logging_info(f'input_path: {input_path}')
+                    # logging_info(f'output_path: {output_path}')                         
+                    Utils.copy_file_same_name(filename, input_path, output_path)
 
     def process_image_annotations_yolo(self,
             annotation_format, 
