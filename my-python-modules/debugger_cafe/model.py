@@ -1,5 +1,7 @@
 import torchvision
 import torch.nn as nn
+import torch
+from thop import profile
 
 from torchvision.models.detection.ssd import (
     SSD, 
@@ -50,6 +52,29 @@ def create_model_pytorchvision(num_classes_aux, size=300, nms=0.45, pretrained=T
         model = None
     return model    
 
+def count_parameters(model):
+    number_of_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)    
+    return number_of_parameters
+
+def count_layers(module):
+    if isinstance(module, (torch.nn.Conv2d, torch.nn.Linear)):
+        return 1
+    return 0
+
+def compute_num_layers(model):
+    num_layers = sum(count_layers(layer) for layer in model.modules())
+    return num_layers
+
+def compute_flops(model, input_size):
+    # input = torch.randn(input_size).unsqueeze(0).cuda()
+    # flops, _ = torch.autograd.profiler.profile(model, inputs=(input, ), verbose=True)
+
+    model.eval()
+    input = torch.randn(1, 3, 300, 300).cuda()  # Change size according to your use case
+    flops, params = profile(model, inputs=(input, ))
+    return flops, params
+
+    
 # if __name__ == '__main__':
 #     model = create_model(2, 300)
 #     print(model)
@@ -59,3 +84,4 @@ def create_model_pytorchvision(num_classes_aux, size=300, nms=0.45, pretrained=T
 #     total_trainable_params = sum(
 #         p.numel() for p in model.parameters() if p.requires_grad)
 #     print(f"{total_trainable_params:,} training parameters.")
+

@@ -399,12 +399,22 @@ def get_dataloaders(parameters):
     logging_info(f'')
     logging_info(f'>> Get dataset and dataloaders of the images for processing')
 
-    # getting datasets 
+    # getting datasets
+    if parameters['input']['input_dataset']['input_dataset_type'] == 'valid':
+        image_dataset_folder = parameters['processing']['image_dataset_folder_valid']
+    if parameters['input']['input_dataset']['input_dataset_type'] == 'test':
+        image_dataset_folder = parameters['processing']['image_dataset_folder_test'] 
+
     test_dataset = create_test_dataset(
-        parameters['processing']['image_dataset_folder_test'], 
+        image_dataset_folder, 
         parameters['neural_network_model']['resize_of_input_image'], 
         parameters['neural_network_model']['classes'], 
     )
+    # test_dataset = create_test_dataset(
+    #     parameters['processing']['image_dataset_folder_test'], 
+    #     parameters['neural_network_model']['resize_of_input_image'], 
+    #     parameters['neural_network_model']['classes'], 
+    # )
    
     logging.info(f'Getting datasets')
     logging.info(f'   Number of testing images: {len(test_dataset)}')
@@ -441,18 +451,30 @@ def get_neural_network_model(parameters, device):
     
     model = model.to(device)
 
+    number_of_parameters = count_parameters(model)
+    logging_info(f'')
+    logging.info(f'Number of model parameters: {number_of_parameters}')    
+
+    num_layers = compute_num_layers(model)
+    logging_info(f'Number of layers: {num_layers}')
+    logging_info(f'')
+
+    # numer_of_flops, model_params = compute_flops(model, (3, 300, 300))
+    # logging_info(f'Number of FLOPS: {numer_of_flops} - params: {model_params}')
+
     logging.info(f'{model}')
 
     # returning neural network model
     return model
 
-
 # getting statistics of input dataset 
 def get_input_dataset_statistics(parameters):
     
     annotation_statistics = AnnotationsStatistic()
-    steps = ['test'] 
+    # steps = ['test'] 
     # steps = ['train', 'valid', 'test']
+    steps = [parameters['input']['input_dataset']['input_dataset_type']]
+
     annotation_statistics.processing_statistics(parameters, steps)
     return annotation_statistics
     

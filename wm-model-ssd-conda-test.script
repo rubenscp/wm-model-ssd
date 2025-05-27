@@ -1,0 +1,12 @@
+#PBS -N ssd_test
+#PBS -q testegpu
+#PBS -e ssd_test_errors 
+#PBS -o ssd_test_output
+#PBS -m abe
+
+export TRANSFORMERS_OFFLINE=1
+
+module load cuda/12.0.0
+source /home/lovelace/proj/proj939/rubenscp/CENAPAD/miniconda3.sh
+unset CUDA_VISIBLE_DEVICES
+python ~/research/white-mold-applications/wm-model-ssd/my-python-modules/manage_ssd_test.py

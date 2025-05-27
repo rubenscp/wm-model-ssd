@@ -62,14 +62,14 @@ def inference_neural_network_model(parameters, device, model):
     model.load_state_dict(checkpoint['model_state_dict'])
     model.to(device).eval()
 
-    # getting list of test images for inference 
+    # getting list of test or valid images for inference 
     input_image_size = str(parameters['input']['input_dataset']['input_image_size'])
     test_image_dataset_folder = os.path.join(
         parameters['processing']['research_root_folder'],
         parameters['input']['input_dataset']['input_dataset_path'],
         parameters['input']['input_dataset']['annotation_format'],
         input_image_size + 'x' + input_image_size,
-        'test'
+        parameters['input']['input_dataset']['input_dataset_type']
     )
 
     # classes 

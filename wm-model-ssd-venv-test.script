@@ -1,0 +1,17 @@
+#PBS -N ssd_test
+#PBS -q testegpu
+#PBS -e ssd_test_errors 
+#PBS -o ssd_test_output
+#PBS -m abe
+
+unset CUDA_VISIBLE_DEVICES
+
+### module load cuda/11.5.0-intel-2021.3.0 NAO USAR 
+### module load cuda/12.0.0-intel-2023.2.1
+### module load cuda/11.4.0-intel-2021.3.0
+### module load cuda/12.0.0-intel-2023.2.1
+### module load cuda/12.0.0  
+
+source ~/research/white-mold-applications/wm-model-ssd/venv-wm-model-ssd/bin/activate
+module load cuda/11.5.0-intel-2019.0.5
+python ~/research/white-mold-applications/wm-model-ssd/my-python-modules/manage_ssd_test.py

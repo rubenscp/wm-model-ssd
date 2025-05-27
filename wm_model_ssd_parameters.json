@@ -9,12 +9,14 @@
             "comment balance input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0013-15ds-300x300-balanced-classes/splitting_by_images/4-balanced-output-dataset",
             "comment two classes input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0014-15ds-300x300-just-two-classes/splitting_by_images/4-balanced-output-dataset",
             "comment three classes input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0015-15ds-300x300-three-classes/splitting_by_images/4-balanced-output-dataset",
-            "commment merged classes input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0021-15ds-300x300-merged-classes/splitting_by_images/4-balanced-output-dataset",
-            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0013-15ds-300x300-balanced-classes/splitting_by_images/4-balanced-output-dataset"            
+            "input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0021-15ds-300x300-merged-classes/splitting_by_images/4-balanced-output-dataset",
+            "comment 44444 input_dataset_path": "white-mold-dataset/results-pre-processed-images/running-0013-15ds-300x300-balanced-classes/splitting_by_images/4-balanced-output-dataset",
+            "input_dataset_type" : "valid"
         },
         "experiment": {
-            "id": "image-dataset-per-class",
-            "description": "006 - Merging \"Imature sclerotium\" and \"White Mold\" creating a new image dataset with three classe: apothecium, mature scledotium and the merged class."
+            "comment 1 id": "image-dataset-per-class",
+            "id": "exp-011",
+            "description": "011 - Getting optimal hyperparameters of the SSD, Faster RCNN, YOLOv8, YOLOv9, YOLOv10, DETR and TransUNet models from validation input dataset."
         },
         "inference": {
             "comment unbalanced weights_folder": "/home/lovelace/proj/proj939/rubenscp/research/white-mold-inference-weights/2024-04-training-300x300-unbalanced-image-with-200-epochs",
@@ -30,9 +32,9 @@
         "number_epochs": 200,
         "batch_size": 128,
         "resize_of_input_image": 300,
-        "threshold": 0.4,
-        "iou_threshold": 0.3,
-        "non_maximum_suppression": 0.7,
+        "threshold": 0.7,
+        "iou_threshold": 0.7,
+        "non_maximum_suppression": 0.9,
         "number_workers": 2,
         "number_of_classes": 5,
         "classes": [

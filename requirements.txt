@@ -12,3 +12,4 @@ lxml
 dict2xml
 seaborn
 openpyxl
+thop
